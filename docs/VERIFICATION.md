@@ -32,6 +32,6 @@ Desktop screenshots at 1448 × 1086 were inspected against the supplied design. 
 
 ## Deployment acceptance still required
 
-The automated checks are not a production security certification or accountant approval. Actual SMTP delivery, offsite provider credentials/access, key custody, a scheduled offsite recovery drill, Tailscale HTTPS and actual founder MFA enrollment require the operator's real environment. They were not asserted or fabricated. No external invoice email was sent.
+The automated checks are not a production security certification or accountant approval. Actual SMTP delivery, offsite provider credentials/access, key custody, a scheduled offsite recovery drill, actual founder MFA enrollment require the operator's real environment. They were not asserted or fabricated. No external invoice email was sent.
 
-The database-failure browser test simulates a failed API response; it is not a chaos/failover test. PostgreSQL restoration is exercised in a real isolated container. No public endpoint was published. UI coverage is Chromium desktop/mobile; Safari/Firefox and assistive-technology audits remain independent acceptance work.
+The database-failure browser test simulates a failed API response; it is not a chaos/failover test. PostgreSQL restoration is exercised in a real isolated container. No public endpoint was published. The private Tailscale HTTPS endpoint was subsequently configured and verified; see [current server operations](HOST.md). UI coverage is Chromium desktop/mobile; Safari/Firefox and assistive-technology audits remain independent acceptance work.

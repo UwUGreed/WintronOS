@@ -4,7 +4,7 @@ Private, self-hosted business management for **Wintron Technologies LLC**. Built
 
 ## Current workspace
 
-The Docker app and scheduler are running at **http://localhost:3000**. Create your first owner from an interactive terminal:
+The Docker app and scheduler are running on server `100.95.159.90`, accessible through **https://alienwareserver.tail70d8db.ts.net:8443** from a device connected to the tailnet. Docker and Tailscale are enabled at boot, and the containers and HTTPS proxy are configured to resume after reboot. See [this server’s operations notes](docs/HOST.md). Create your first owner from an interactive terminal:
 
 ```bash
 cd /home/greed/wintron-os
