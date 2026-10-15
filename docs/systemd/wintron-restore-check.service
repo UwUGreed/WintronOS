@@ -1,0 +1,11 @@
+[Unit]
+Description=Wintron OS isolated backup restoration verification
+Requires=docker.service
+After=docker.service
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/wintron-os
+EnvironmentFile=/etc/wintron/backup.env
+ExecStart=/opt/wintron-os/scripts/verify-backup.sh
+User=root
+UMask=0077

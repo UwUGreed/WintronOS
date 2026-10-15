@@ -1,0 +1,11 @@
+[Unit]
+Description=Wintron OS encrypted offsite backup
+Requires=docker.service
+After=docker.service
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/wintron-os
+EnvironmentFile=/etc/wintron/backup.env
+ExecStart=/opt/wintron-os/scripts/backup.sh
+User=root
+UMask=0077

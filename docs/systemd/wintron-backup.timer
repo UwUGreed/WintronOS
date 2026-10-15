@@ -1,0 +1,8 @@
+[Unit]
+Description=Daily Wintron OS backup
+[Timer]
+OnCalendar=*-*-* 03:00:00 America/New_York
+Persistent=true
+RandomizedDelaySec=300
+[Install]
+WantedBy=timers.target

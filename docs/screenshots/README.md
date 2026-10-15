@@ -1,0 +1,1 @@
+These screenshots were captured from automated browser tests using generated accounts and fictional example records in the isolated test database. They are visual verification artifacts, not production company metrics or customers. The business database starts empty.

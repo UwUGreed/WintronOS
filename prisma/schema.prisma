@@ -1,0 +1,523 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model User {
+  id String @id
+  name String
+  email String @unique
+  emailVerified Boolean @default(false)
+  image String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  twoFactorEnabled Boolean @default(false)
+  sessions Session[]
+  accounts Account[]
+  twoFactors TwoFactor[]
+  memberships Membership[]
+}
+model Session {
+  id String @id
+  expiresAt DateTime
+  token String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@index([userId])
+}
+model Account {
+  id String @id
+  accountId String
+  providerId String
+  userId String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  accessToken String?
+  refreshToken String?
+  idToken String?
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope String?
+  password String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+  @@unique([providerId, accountId])
+}
+model Verification {
+  id String @id
+  identifier String
+  value String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([identifier])
+}
+model TwoFactor {
+  id String @id
+  secret String
+  backupCodes String
+  verified Boolean @default(false)
+  failedVerificationCount Int @default(0)
+  lockedUntil DateTime?
+  userId String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@index([userId])
+}
+model RateLimit {
+  id String @id @default(cuid())
+  key String @unique
+  count Int
+  lastRequest BigInt
+}
+model Organization {
+  id String @id @default(cuid())
+  name String @default("Wintron Technologies LLC")
+  address String @default("")
+  email String @default("")
+  phone String @default("")
+  website String @default("")
+  invoicePrefix String @default("INV")
+  nextInvoice Int @default(1)
+  paymentTerms Int @default(30)
+  paymentInstructions String @default("")
+  terms String @default("")
+  createdAt DateTime @default(now())
+  memberships Membership[]
+  clients Client[]
+  accounts LedgerAccount[]
+  invoices Invoice[]
+  payments Payment[]
+  expenses Expense[]
+  journals JournalEntry[]
+  retainers Retainer[]
+  owners Owner[]
+  ownerTransactions OwnerTransaction[]
+  taxConfigurations TaxConfiguration[]
+  taxPayments TaxPayment[]
+  audits AuditEvent[]
+  notifications Notification[]
+  documents Document[]
+  jobs JobRun[]
+}
+enum Role {
+  OWNER
+  STAFF
+  ACCOUNTANT
+}
+model Membership {
+  id String @id @default(cuid())
+  userId String
+  organizationId String
+  role Role @default(STAFF)
+  active Boolean @default(true)
+  user User @relation(fields:[userId], references:[id], onDelete:Restrict)
+  organization Organization @relation(fields:[organizationId], references:[id], onDelete:Restrict)
+  @@unique([userId, organizationId])
+}
+model Client {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId], references:[id], onDelete:Restrict)
+  name String
+  tradeName String @default("")
+  industry String @default("")
+  website String @default("")
+  contactName String @default("")
+  email String @default("")
+  phone String @default("")
+  billingAddress String @default("")
+  serviceAddress String @default("")
+  status String @default("ACTIVE")
+  leadSource String @default("")
+  tags String[] @default([])
+  paymentTerms Int @default(30)
+  billingPreferences String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  contacts Contact[]
+  notes ClientNote[]
+  projects Project[]
+  invoices Invoice[]
+  payments Payment[]
+  retainers Retainer[]
+  documents Document[]
+  expenses Expense[]
+  @@unique([id, organizationId])
+  @@index([organizationId, name])
+}
+model Contact {
+  id String @id @default(cuid())
+  clientId String
+  client Client @relation(fields:[clientId],references:[id],onDelete:Restrict)
+  name String
+  email String @default("")
+  phone String @default("")
+  title String @default("")
+}
+model ClientNote {
+  id String @id @default(cuid())
+  clientId String
+  client Client @relation(fields:[clientId], references:[id], onDelete:Restrict)
+  title String
+  content String
+  tags String[] @default([])
+  authorId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  revisions NoteRevision[]
+  @@index([clientId, createdAt])
+}
+model NoteRevision {
+  id String @id @default(cuid())
+  noteId String
+  note ClientNote @relation(fields:[noteId],references:[id],onDelete:Restrict)
+  title String
+  content String
+  authorId String
+  createdAt DateTime @default(now())
+}
+model Project {
+  id String @id @default(cuid())
+  clientId String
+  client Client @relation(fields:[clientId], references:[id], onDelete:Restrict)
+  name String
+  description String @default("")
+  status String @default("ACTIVE")
+  dueDate DateTime? @db.Date
+  createdAt DateTime @default(now())
+  documents Document[]
+  expenses Expense[]
+}
+model Invoice {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId], references:[id], onDelete:Restrict)
+  clientId String
+  client Client @relation(fields:[clientId,organizationId],references:[id,organizationId],onDelete:Restrict)
+  number String?
+  status String @default("DRAFT")
+  issueDate DateTime @db.Date
+  dueDate DateTime @db.Date
+  description String
+  currency String @default("USD")
+  notes String @default("")
+  terms String @default("")
+  paymentInstructions String @default("")
+  subtotal Decimal @db.Decimal(18,2)
+  discount Decimal @db.Decimal(18,2)
+  tax Decimal @db.Decimal(18,2)
+  total Decimal @db.Decimal(18,2)
+  snapshot Json?
+  issuedAt DateTime?
+  voidReason String?
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  retainerId String?
+  retainer Retainer? @relation(fields:[retainerId],references:[id],onDelete:Restrict)
+  billingPeriod DateTime? @db.Date
+  lines InvoiceLine[]
+  allocations PaymentAllocation[]
+  deliveries InvoiceDelivery[]
+  @@unique([organizationId, number])
+  @@unique([retainerId,billingPeriod])
+  @@unique([id,organizationId])
+  @@index([organizationId, status, dueDate])
+}
+model InvoiceLine {
+  id String @id @default(cuid())
+  invoiceId String
+  invoice Invoice @relation(fields:[invoiceId], references:[id], onDelete:Restrict)
+  description String
+  quantity Decimal @db.Decimal(12,4)
+  unitPrice Decimal @db.Decimal(18,4)
+  discountPercent Decimal @db.Decimal(7,4)
+  taxPercent Decimal @db.Decimal(7,4)
+  jurisdiction String @default("")
+  serviceCategory String @default("Services")
+  subtotal Decimal @db.Decimal(18,2)
+  discount Decimal @db.Decimal(18,2)
+  tax Decimal @db.Decimal(18,2)
+  total Decimal @db.Decimal(18,2)
+  position Int
+}
+model InvoiceDelivery {
+  id String @id @default(cuid())
+  invoiceId String
+  invoice Invoice @relation(fields:[invoiceId],references:[id],onDelete:Restrict)
+  status String
+  recipient String
+  error String?
+  actorId String
+  createdAt DateTime @default(now())
+}
+model Payment {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  clientId String
+  client Client @relation(fields:[clientId,organizationId],references:[id,organizationId],onDelete:Restrict)
+  amount Decimal @db.Decimal(18,2)
+  receivedAt DateTime @db.Date
+  method String
+  reference String @default("")
+  notes String @default("")
+  idempotencyKey String
+  requestHash String
+  paymentAccount String @default("1000")
+  recordedBy String
+  reconciled Boolean @default(false)
+  createdAt DateTime @default(now())
+  allocations PaymentAllocation[]
+  refunds Refund[]
+  @@unique([organizationId,idempotencyKey])
+  @@unique([id,organizationId])
+  @@index([organizationId, receivedAt])
+}
+model PaymentAllocation {
+  id String @id @default(cuid())
+  organizationId String
+  paymentId String
+  payment Payment @relation(fields:[paymentId,organizationId],references:[id,organizationId],onDelete:Restrict)
+  invoiceId String
+  invoice Invoice @relation(fields:[invoiceId,organizationId],references:[id,organizationId],onDelete:Restrict)
+  amount Decimal @db.Decimal(18,2)
+  refunds Refund[]
+  @@unique([paymentId,invoiceId])
+}
+model Refund {
+  id String @id @default(cuid())
+  paymentId String
+  payment Payment @relation(fields:[paymentId],references:[id],onDelete:Restrict)
+  allocationId String?
+  allocation PaymentAllocation? @relation(fields:[allocationId],references:[id],onDelete:Restrict)
+  amount Decimal @db.Decimal(18,2)
+  reason String
+  actorId String
+  date DateTime @db.Date
+  createdAt DateTime @default(now())
+}
+model Expense {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  clientId String?
+  client Client? @relation(fields:[clientId],references:[id],onDelete:Restrict)
+  projectId String?
+  project Project? @relation(fields:[projectId],references:[id],onDelete:Restrict)
+  vendor String
+  description String
+  date DateTime @db.Date
+  amount Decimal @db.Decimal(18,2)
+  category String
+  accountCode String
+  paymentAccount String @default("1000")
+  method String
+  notes String @default("")
+  reviewRequired Boolean @default(true)
+  recordedBy String
+  reversedAt DateTime?
+  recurringInterval String?
+  nextDate DateTime? @db.Date
+  sourceExpenseId String?
+  createdAt DateTime @default(now())
+  documents Document[]
+  @@index([organizationId,date])
+  @@unique([sourceExpenseId,date])
+}
+model LedgerAccount {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  code String
+  name String
+  type String
+  lines JournalLine[]
+  @@unique([organizationId,code])
+  @@unique([id,organizationId])
+}
+model JournalEntry {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  date DateTime @db.Date
+  memo String
+  sourceType String
+  sourceId String
+  actorId String
+  reversalOf String? @unique
+  createdAt DateTime @default(now())
+  lines JournalLine[]
+  @@unique([organizationId,sourceType,sourceId])
+  @@unique([id,organizationId])
+  @@index([organizationId,date])
+}
+model JournalLine {
+  id String @id @default(cuid())
+  organizationId String
+  entryId String
+  entry JournalEntry @relation(fields:[entryId,organizationId],references:[id,organizationId],onDelete:Restrict)
+  accountId String
+  account LedgerAccount @relation(fields:[accountId,organizationId],references:[id,organizationId],onDelete:Restrict)
+  debit Decimal @db.Decimal(18,2)
+  credit Decimal @db.Decimal(18,2)
+}
+model Owner {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  name String
+  percentage Decimal @db.Decimal(7,4)
+  residency String @default("")
+  transactions OwnerTransaction[]
+  @@unique([id,organizationId])
+}
+model OwnerTransaction {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  ownerId String
+  owner Owner @relation(fields:[ownerId,organizationId],references:[id,organizationId],onDelete:Restrict)
+  kind String
+  amount Decimal @db.Decimal(18,2)
+  date DateTime @db.Date
+  notes String
+  actorId String
+  createdAt DateTime @default(now())
+}
+model TaxConfiguration {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  taxYear Int
+  effectiveDate DateTime @db.Date
+  classification String @default("UNCONFIRMED")
+  accountingMethod String @default("ACCRUAL")
+  federalReservePercent Decimal @db.Decimal(7,4)
+  stateReservePercent Decimal @db.Decimal(7,4)
+  selfEmploymentReservePercent Decimal @db.Decimal(7,4)
+  earmarked Decimal @db.Decimal(18,2)
+  sourceReferences String
+  reviewNotes String
+  createdBy String
+  createdAt DateTime @default(now())
+  @@index([organizationId,effectiveDate])
+}
+model TaxPayment {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  date DateTime @db.Date
+  amount Decimal @db.Decimal(18,2)
+  jurisdiction String
+  taxYear Int
+  kind String
+  reference String
+  actorId String
+}
+model Retainer {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  clientId String
+  client Client @relation(fields:[clientId,organizationId],references:[id,organizationId],onDelete:Restrict)
+  name String
+  services String
+  amount Decimal @db.Decimal(18,2)
+  frequency String
+  startDate DateTime @db.Date
+  endDate DateTime? @db.Date
+  nextInvoiceDate DateTime @db.Date
+  billingDay Int
+  paymentTerms Int @default(30)
+  status String @default("ACTIVE")
+  notes String @default("")
+  hours Decimal? @db.Decimal(10,2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  invoices Invoice[]
+  documents Document[]
+  timeEntries TimeEntry[]
+  @@index([organizationId,status,nextInvoiceDate])
+}
+model TimeEntry {
+  id String @id @default(cuid())
+  retainerId String
+  retainer Retainer @relation(fields:[retainerId],references:[id],onDelete:Restrict)
+  date DateTime @db.Date
+  minutes Int
+  description String
+  actorId String
+}
+model Document {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  clientId String?
+  client Client? @relation(fields:[clientId],references:[id],onDelete:Restrict)
+  projectId String?
+  project Project? @relation(fields:[projectId],references:[id],onDelete:Restrict)
+  expenseId String?
+  expense Expense? @relation(fields:[expenseId],references:[id],onDelete:Restrict)
+  retainerId String?
+  retainer Retainer? @relation(fields:[retainerId],references:[id],onDelete:Restrict)
+  name String
+  storageKey String @unique
+  mimeType String
+  size Int
+  sha256 String
+  uploadedBy String
+  createdAt DateTime @default(now())
+  @@index([organizationId,clientId])
+}
+model AuditEvent {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  actorId String
+  action String
+  entityType String
+  entityId String
+  clientId String?
+  summary String
+  before Json?
+  after Json?
+  createdAt DateTime @default(now())
+  @@index([organizationId,createdAt])
+  @@index([organizationId,clientId])
+}
+model Notification {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  key String
+  title String
+  message String
+  target String
+  createdAt DateTime @default(now())
+  reads NotificationRead[]
+  @@unique([organizationId,key])
+}
+model NotificationRead {
+  id String @id @default(cuid())
+  notificationId String
+  notification Notification @relation(fields:[notificationId],references:[id],onDelete:Restrict)
+  userId String
+  readAt DateTime @default(now())
+  @@unique([notificationId,userId])
+}
+model JobRun {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  kind String
+  status String
+  detail String
+  createdAt DateTime @default(now())
+}
