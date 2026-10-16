@@ -7,6 +7,7 @@ import {
   saveClient,
   saveNote,
   recordExpense,
+  reviewExpense,
   reverseExpense,
   saveRetainer,
   runRecurring,
@@ -475,4 +476,105 @@ it("allocates one payment across multiple invoices and preserves payment-account
   expect(
     entry.lines.find((line) => line.account.code === "1010")?.debit.toFixed(2),
   ).toBe("200.00");
+});
+
+it("records immutable expense reviews without changing financial postings", async () => {
+  const expense = await recordExpense(owner, {
+    vendor: "Review Test Vendor",
+    description: "Receipt review",
+    date: day,
+    amount: "17",
+    category: "Hosting",
+    accountCode: "5100",
+    method: "ACH",
+  });
+  const before = await db.journalEntry.findMany({
+    where: { sourceId: expense.id },
+    include: { lines: true },
+  });
+  await expect(
+    reviewExpense(staff, expense.id, {
+      reviewRequired: false,
+      notes: "Receipt checked",
+    }),
+  ).rejects.toThrow("permission");
+  await expect(
+    reviewExpense(accountant, expense.id, {
+      reviewRequired: false,
+      notes: "Receipt checked",
+    }),
+  ).rejects.toThrow("permission");
+  await expect(
+    reviewExpense(outsider, expense.id, {
+      reviewRequired: false,
+      notes: "Receipt checked",
+    }),
+  ).rejects.toThrow("not found");
+  await expect(
+    reviewExpense(owner, expense.id, { reviewRequired: false, notes: "    " }),
+  ).rejects.toThrow();
+  const completed = await reviewExpense(owner, expense.id, {
+    reviewRequired: false,
+    notes: "Receipt, amount and business purpose checked.",
+  });
+  expect(completed.reviewerId).toBe(owner.userId);
+  expect(completed.reviewerName).toBe(owner.name);
+  expect(
+    (await db.expense.findUniqueOrThrow({ where: { id: expense.id } }))
+      .reviewRequired,
+  ).toBe(false);
+  await expect(
+    reviewExpense(owner, expense.id, {
+      reviewRequired: false,
+      notes: "Duplicate submission",
+    }),
+  ).rejects.toThrow("already changed");
+  await reviewExpense(owner, expense.id, {
+    reviewRequired: true,
+    notes: "Need an itemized receipt.",
+  });
+  const updated = await db.expense.findUniqueOrThrow({
+    where: { id: expense.id },
+    include: { reviews: true },
+  });
+  expect(updated.reviewRequired).toBe(true);
+  expect(updated.reviews).toHaveLength(2);
+  expect(
+    await db.journalEntry.findMany({
+      where: { sourceId: expense.id },
+      include: { lines: true },
+    }),
+  ).toEqual(before);
+  expect(
+    await db.auditEvent.count({
+      where: {
+        entityId: expense.id,
+        action: { in: ["REVIEWED", "REVIEW_REOPENED"] },
+      },
+    }),
+  ).toBe(2);
+  await expect(
+    db.expenseReview.update({
+      where: { id: completed.id },
+      data: { notes: "Changed review" },
+    }),
+  ).rejects.toThrow();
+  await expect(
+    db.expenseReview.delete({ where: { id: completed.id } }),
+  ).rejects.toThrow();
+  await expect(
+    db.expense.update({ where: { id: expense.id }, data: { amount: "18" } }),
+  ).rejects.toThrow();
+  await reverseExpense(
+    owner,
+    expense.id,
+    new Date(day),
+    "Close review test expense",
+  );
+  await expect(
+    reviewExpense(owner, expense.id, {
+      reviewRequired: false,
+      notes: "Review reversed expense",
+    }),
+  ).rejects.toThrow("Reversed");
 });

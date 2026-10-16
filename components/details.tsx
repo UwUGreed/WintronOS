@@ -31,6 +31,7 @@ import {
 } from "./ui";
 import type { Client, State, Row, Invoice } from "@/lib/client-types";
 import type { FormKind } from "./forms";
+import { DocumentLink } from "./document-preview";
 import { InvoiceTable } from "./dashboard";
 export function InvoiceDetail({
   invoice,
@@ -619,10 +620,7 @@ export function ClientDetail({
                   <td>{Math.ceil(Number(d.size) / 1024)} KB</td>
                   <td>{dateLabel(d.createdAt)}</td>
                   <td>
-                    <a className="text-button" href={"/api/documents/" + d.id}>
-                      <Download size={15} />
-                      Download
-                    </a>
+                    <DocumentLink document={d} label="View document" />
                   </td>
                 </tr>
               ))}

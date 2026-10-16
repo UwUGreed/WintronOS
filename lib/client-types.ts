@@ -81,6 +81,12 @@ export type Expense = Row & {
   amount: string;
   category: string;
   reviewRequired: boolean;
+  reviews: (Row & {
+    reviewRequired: boolean;
+    notes: string;
+    reviewerName: string;
+    createdAt: string;
+  })[];
   reversedAt: string | null;
   documents: Row[];
 };

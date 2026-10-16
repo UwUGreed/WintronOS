@@ -328,8 +328,20 @@ model Expense {
   sourceExpenseId String?
   createdAt DateTime @default(now())
   documents Document[]
+  reviews ExpenseReview[]
   @@index([organizationId,date])
   @@unique([sourceExpenseId,date])
+}
+model ExpenseReview {
+  id String @id @default(cuid())
+  expenseId String
+  expense Expense @relation(fields:[expenseId],references:[id],onDelete:Restrict)
+  reviewRequired Boolean
+  notes String
+  reviewerId String
+  reviewerName String
+  createdAt DateTime @default(now())
+  @@index([expenseId,createdAt])
 }
 model LedgerAccount {
   id String @id @default(cuid())

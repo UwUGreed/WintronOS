@@ -30,6 +30,7 @@ import {
   saveClient,
   saveNote,
   recordExpense,
+  reviewExpense,
   reverseExpense,
   saveRetainer,
   runRecurring,
@@ -180,10 +181,21 @@ async function handle(
       }
       if (resource === "documents" && id) {
         const { doc, bytes } = await download(a, id);
+        const preview = action === "preview";
+        if (action && !preview) throw new AppError("Endpoint not found.", 404);
+        if (
+          preview &&
+          !["application/pdf", "image/png", "image/jpeg"].includes(doc.mimeType)
+        )
+          throw new AppError(
+            "Preview is available for PDF, PNG and JPEG files. Download this document to open it.",
+            415,
+          );
         return new Response(new Uint8Array(bytes), {
           headers: {
             "Content-Type": doc.mimeType,
-            "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(doc.name)}`,
+            "Content-Disposition": `${preview ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(doc.name)}`,
+            "X-Content-Type-Options": "nosniff",
             "Cache-Control": "no-store",
           },
         });
@@ -582,6 +594,7 @@ async function handle(
       }
       if (resource === "expenses") {
         if (!id) return json(await recordExpense(a, raw));
+        if (action === "review") return json(await reviewExpense(a, id, raw));
         if (action === "reverse") {
           const data = schemas.reasonSchema.parse(raw);
           return json(await reverseExpense(a, id, data.date, data.reason));

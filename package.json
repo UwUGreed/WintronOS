@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
-    "build": "prisma generate && next build && node scripts/sanitize-build.mjs",
+    "build": "node scripts/prepare-pdf.mjs && prisma generate && next build && node scripts/sanitize-build.mjs",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -12,7 +12,8 @@
     "db:migrate": "prisma migrate deploy",
     "admin:create": "tsx scripts/create-admin.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "jobs": "tsx scripts/jobs.ts"
+    "jobs": "tsx scripts/jobs.ts",
+    "predev": "node scripts/prepare-pdf.mjs"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
@@ -26,6 +27,7 @@
     "next": "16.4.1",
     "nodemailer": "^10.1.1",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "6.4.299",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",

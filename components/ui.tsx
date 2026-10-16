@@ -47,7 +47,15 @@ export function Card({
   );
 }
 export function Badge({ value }: { value: string }) {
-  const good = ["ACTIVE", "PAID", "SUCCESS", "SENT", "DELIVERED", "COMPLETED"];
+  const good = [
+    "ACTIVE",
+    "PAID",
+    "SUCCESS",
+    "SENT",
+    "DELIVERED",
+    "COMPLETED",
+    "REVIEWED",
+  ];
   const bad = ["OVERDUE", "VOID", "FAILED", "CANCELLED"];
   return (
     <span

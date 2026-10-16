@@ -48,6 +48,8 @@ import { Dashboard, InvoiceTable, RevenueChart } from "./dashboard";
 import { RecordForm, type FormKind } from "./forms";
 import { ClientDetail, InvoiceDetail } from "./details";
 import { SettingsPanel } from "./settings";
+import { DocumentLink } from "./document-preview";
+import { ExpenseReviewDialog } from "./expense-review";
 import { AccountSecurity } from "./account-security";
 import { authClient } from "@/lib/auth-client";
 import { D, ownerAllocations, sum } from "@/lib/money";
@@ -100,6 +102,7 @@ export function Workspace() {
   const [period, setPeriod] = useState("month");
   const [revision, setRevision] = useState(0);
   const [detail, setDetail] = useState<string | null>(null);
+  const [expenseId, setExpenseId] = useState<string | null>(null);
   const [invoiceId, setInvoiceId] = useState<string | null>(null);
   const [form, setForm] = useState<{
     kind: FormKind;
@@ -947,21 +950,20 @@ export function Workspace() {
                                       ? "VOID"
                                       : e.reviewRequired
                                         ? "REVIEW_REQUIRED"
-                                        : "RECORDED"
+                                        : e.reviews.length
+                                          ? "REVIEWED"
+                                          : "RECORDED"
                                   }
                                 />
                               </td>
                               <td>
                                 {e.documents.length ? (
                                   e.documents.map((d) => (
-                                    <a
+                                    <DocumentLink
                                       key={d.id}
-                                      className="text-button"
-                                      href={"/api/documents/" + d.id}
-                                    >
-                                      <Download size={14} />
-                                      Receipt
-                                    </a>
+                                      document={d}
+                                      label="View receipt"
+                                    />
                                   ))
                                 ) : write ? (
                                   <label className="text-button upload-label">
@@ -984,20 +986,30 @@ export function Workspace() {
                                 )}
                               </td>
                               <td>
-                                {owner && !e.reversedAt && (
+                                <div className="expense-row-actions">
                                   <button
                                     className="text-button"
-                                    onClick={() =>
-                                      ask(
-                                        `expenses/${e.id}/reverse`,
-                                        "Reverse this expense?",
-                                        true,
-                                      )
-                                    }
+                                    onClick={() => setExpenseId(e.id)}
                                   >
-                                    Reverse
+                                    {e.reviewRequired && owner && !e.reversedAt
+                                      ? "Review"
+                                      : "Review details"}
                                   </button>
-                                )}
+                                  {owner && !e.reversedAt && (
+                                    <button
+                                      className="text-button"
+                                      onClick={() =>
+                                        ask(
+                                          `expenses/${e.id}/reverse`,
+                                          "Reverse this expense?",
+                                          true,
+                                        )
+                                      }
+                                    >
+                                      Reverse
+                                    </button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -1784,6 +1796,18 @@ export function Workspace() {
           openForm={openForm}
           perform={perform}
           ask={ask}
+        />
+      )}
+      {expenseId && state?.expenses.find((e) => e.id === expenseId) && (
+        <ExpenseReviewDialog
+          key={expenseId}
+          expense={state.expenses.find((e) => e.id === expenseId)!}
+          owner={owner}
+          onClose={() => setExpenseId(null)}
+          onSaved={async () => {
+            await reload();
+            setToast("Expense review saved.");
+          }}
         />
       )}
       {confirmation && (

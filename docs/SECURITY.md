@@ -32,3 +32,9 @@ For compromise: disable affected membership, revoke sessions, stop external deli
 ## Release limitations
 
 Automated tests and a clean dependency audit are evidence, not a penetration test or accounting certification. Before real business use, perform independent security review, accountant review, real Tailscale HTTPS checks, MFA enrollment, SMTP test, offsite backup and target-host restoration. Large-scale pagination, more granular client-specific staff permissions, antivirus scanning, nonce-based CSP and formal accounting period locks are not yet implemented. Accounts are currently organization-wide. These are explicit limitations, not hidden frontend-only access controls.
+
+### Document previews and expense reviews
+
+Preview requests enforce the same session, membership, organization scope and SHA-256 checks as downloads. Only validated PDF/PNG/JPEG files are served inline; DOCX stays download-only. The viewer fetches private bytes with no-store caching. Images use temporary browser object URLs, revoked when closed; PDFs render one page at a time on canvas using locally hosted PDF.js and its worker, with bounded canvas dimensions. Embedded PDF scripts and active annotation actions are not executed. CSP permits blob images/fonts and same-origin workers; uploaded HTML and SVG remain prohibited. Downloads retain attachment disposition.
+
+Only owners can mark or reopen expense reviews. Status changes, immutable review entries and audit events commit in one serializable transaction. Review history retains the actor name/id and notes, while financial expense fields and posted journals remain immutable. A completed review is an administrative check, not a declaration of tax deductibility.

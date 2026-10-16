@@ -41,7 +41,11 @@ export async function reports(a: Actor, from: Date, to: Date) {
     }),
     db.expense.findMany({
       where: { organizationId },
-      include: { client: true, documents: true },
+      include: {
+        client: true,
+        documents: true,
+        reviews: { orderBy: { createdAt: "desc" } },
+      },
       orderBy: { date: "desc" },
     }),
     db.retainer.findMany({

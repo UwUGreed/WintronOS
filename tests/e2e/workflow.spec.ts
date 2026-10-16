@@ -1,3 +1,4 @@
+import { PDFDocument } from "pdf-lib";
 import { test, expect } from "@playwright/test";
 import { readFileSync, existsSync, chmodSync } from "node:fs";
 import { createHmac } from "node:crypto";
@@ -308,6 +309,223 @@ test("failed data requests show a recoverable error without fabricated metrics",
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(page.locator(".global-error")).toBeHidden();
   await expect(page.getByText("Period revenue", { exact: true })).toBeVisible();
+});
+test("receipt previews, client PDFs and auditable expense review", async ({
+  page,
+  browser,
+}) => {
+  await login(page);
+  const headers = { origin: "http://localhost:43817" };
+  const state = await (await page.request.get("/api/state")).json();
+  let client = state.clients[0];
+  if (!client) {
+    const response = await page.request.post("/api/clients", {
+      headers,
+      data: { name: "Example E2E Company", email: "billing@example.invalid" },
+    });
+    expect(response.ok()).toBeTruthy();
+    client = await response.json();
+  }
+  const created = await page.request.post("/api/expenses", {
+    headers,
+    data: {
+      vendor: "Receipt Preview Vendor",
+      description: "Review workflow",
+      amount: "12",
+      date: new Date().toISOString().slice(0, 10),
+      category: "Hosting",
+      accountCode: "5100",
+      method: "ACH",
+      clientId: client.id,
+    },
+  });
+  expect(created.ok()).toBeTruthy();
+  const expense = await created.json();
+  const upload = await page.request.post("/api/documents", {
+    headers,
+    multipart: {
+      expenseId: expense.id,
+      file: {
+        name: "receipt.png",
+        mimeType: "image/png",
+        buffer: Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a0mUAAAAASUVORK5CYII=",
+          "base64",
+        ),
+      },
+    },
+  });
+  expect(upload.ok()).toBeTruthy();
+  const receipt = await upload.json();
+  await page
+    .getByRole("navigation")
+    .getByRole("button", { name: "Expenses", exact: true })
+    .click();
+  await page.reload();
+  const row = page
+    .getByRole("row")
+    .filter({ hasText: "Receipt Preview Vendor" });
+  await row.getByRole("button", { name: "View receipt" }).click();
+  let dialog = page.getByRole("dialog");
+  const receiptImage = dialog.getByRole("img", { name: "receipt.png" });
+  await expect(receiptImage).toBeVisible();
+  await expect
+    .poll(() =>
+      receiptImage.evaluate((img: HTMLImageElement) => img.naturalWidth),
+    )
+    .toBeGreaterThan(0);
+  await dialog.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await expect(dialog.getByText("125%")).toBeVisible();
+  const downloadPromise = page.waitForEvent("download");
+  await dialog.getByRole("link", { name: "Download", exact: true }).click();
+  expect((await downloadPromise).suggestedFilename()).toBe("receipt.png");
+  await page.keyboard.press("Escape");
+  await row.getByRole("button", { name: "Review", exact: true }).click();
+  dialog = page.getByRole("dialog");
+  await expect(
+    dialog.getByRole("button", { name: "Mark reviewed" }),
+  ).toBeDisabled();
+  await dialog
+    .getByLabel("Review notes", { exact: true })
+    .fill("Verified receipt, amount and business purpose.");
+  await dialog.getByRole("button", { name: "Mark reviewed" }).click();
+  await expect(
+    dialog.getByText("Verified receipt, amount and business purpose.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    dialog.getByRole("button", { name: "Reopen review" }),
+  ).toBeVisible();
+  await dialog.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(row.getByText("reviewed", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(row.getByText("reviewed", { exact: true })).toBeVisible();
+  await row.getByRole("button", { name: "Review details" }).click();
+  dialog = page.getByRole("dialog");
+  await dialog
+    .getByLabel("Reason to reopen review")
+    .fill("Need an itemized receipt for follow-up.");
+  await dialog.getByRole("button", { name: "Reopen review" }).click();
+  await expect(
+    dialog.getByText("Need an itemized receipt for follow-up.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    dialog.getByText("Verified receipt, amount and business purpose.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await dialog.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(row.getByText("review required", { exact: true })).toBeVisible();
+
+  const pdf = await PDFDocument.create();
+  pdf.addPage().drawText("Fictional receipt preview", { x: 48, y: 740 });
+  pdf.addPage().drawText("Second receipt page", { x: 48, y: 740 });
+  const pdfUpload = await page.request.post("/api/documents", {
+    headers,
+    multipart: {
+      clientId: client.id,
+      file: {
+        name: "preview.pdf",
+        mimeType: "application/pdf",
+        buffer: Buffer.from(await pdf.save()),
+      },
+    },
+  });
+  expect(pdfUpload.ok()).toBeTruthy();
+  const doc = await pdfUpload.json();
+  const inline = await page.request.get(`/api/documents/${doc.id}/preview`);
+  expect(inline.headers()["content-disposition"]).toMatch(/^inline/);
+  expect(inline.headers()["cache-control"]).toBe("no-store");
+  await page
+    .getByRole("navigation")
+    .getByRole("button", { name: "Clients", exact: true })
+    .click();
+  await page.getByRole("button", { name: "EX Example E2E Company" }).click();
+  await page.getByRole("tab", { name: "Files", exact: true }).click();
+  await page
+    .getByRole("row")
+    .filter({ hasText: "preview.pdf" })
+    .getByRole("button", { name: "View document" })
+    .click();
+  dialog = page.getByRole("dialog");
+  await expect(dialog.locator("canvas")).toHaveAttribute(
+    "data-rendered",
+    "true",
+  );
+  await expect(dialog.getByText("Page 1 of 2")).toBeVisible();
+  await expect(
+    dialog.getByText("Fictional receipt preview", { exact: true }),
+  ).toBeAttached();
+  await dialog.getByRole("button", { name: "Next page" }).click();
+  await expect(dialog.locator("canvas")).toHaveAttribute(
+    "data-rendered",
+    "true",
+  );
+  await expect(dialog.getByText("Page 2 of 2")).toBeVisible();
+  await expect(
+    dialog.getByText("Second receipt page", { exact: true }),
+  ).toBeAttached();
+  // Confirm the PDF actually paints visible content, not just a completed load.
+  await expect
+    .poll(() =>
+      dialog.locator("canvas").evaluate((canvas: HTMLCanvasElement) => {
+        const pixels = canvas
+          .getContext("2d")!
+          .getImageData(0, 0, canvas.width, Math.floor(canvas.height / 2)).data;
+        let darkPixels = 0;
+        for (let i = 0; i < pixels.length; i += 4)
+          if (pixels[i] < 200 && pixels[i + 3] > 0) darkPixels++;
+        return darkPixels;
+      }),
+    )
+    .toBeGreaterThan(100);
+  await page.screenshot({ path: ".data/document-preview.png" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect
+    .poll(() =>
+      dialog
+        .locator("canvas")
+        .evaluate((canvas: HTMLCanvasElement) => canvas.width),
+    )
+    .toBeLessThan(390);
+  await expect(dialog.locator("canvas")).toHaveAttribute(
+    "data-rendered",
+    "true",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({ path: ".data/document-preview-mobile.png" });
+  await page.setViewportSize({ width: 1448, height: 1086 });
+  await page.keyboard.press("Escape");
+
+  const anonymous = await browser.newContext();
+  expect(
+    (
+      await anonymous.request.get(
+        `http://localhost:43817/api/documents/${receipt.id}/preview`,
+      )
+    ).status(),
+  ).toBe(401);
+  await anonymous.close();
+  const accountantPage = await page.context().browser()!.newPage();
+  await login(accountantPage, credentials().accountantEmail);
+  expect(
+    (
+      await accountantPage.request.get(`/api/documents/${doc.id}/preview`)
+    ).status(),
+  ).toBe(200);
+  const denied = await accountantPage.request.post(
+    `/api/expenses/${expense.id}/review`,
+    { headers, data: { reviewRequired: false, notes: "Not authorized" } },
+  );
+  expect(denied.status()).toBe(403);
+  await accountantPage.context().close();
 });
 test("authentication is rate limited", async ({ request }) => {
   let status = 0;

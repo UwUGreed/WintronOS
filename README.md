@@ -31,10 +31,10 @@ Open **http://localhost:3000**. The first-owner command asks for a hidden passwo
 ## Implemented workflows
 
 - Dashboard sourced from PostgreSQL: accrual revenue, current receivables, reserve planning, active clients, chart, activity, contracts and quick actions.
-- CRM: client profiles, contacts, rich notes with edit history, projects, private files, timeline and organization-scoped search.
+- CRM: client profiles, contacts, rich notes with edit history, projects, private files with PDF/image previews, timeline and organization-scoped search.
 - Invoices: multiline drafts, precise discounts/configurable sales tax, immutable issuance and numbering, identity snapshots, PDF/print, SMTP delivery events, duplicate, reasoned void and replacement.
 - Payments: partial/multi-invoice allocations, unapplied funds, refunds/corrections, reconciliation, stable idempotency keys, operating/reserve cash account selection.
-- Expenses: mapped ledger accounts, receipts, uncertain deductibility review flags, recurring confirmed payments, reversible corrections.
+- Expenses: mapped ledger accounts, receipt previews, owner review/reopening with notes and immutable history, uncertain deductibility review flags, recurring confirmed payments, reversible corrections.
 - Double-entry accounting: immutable journals, database-enforced balancing, owner capital/distributions, reviewed adjustments and ledger-backed reports with CSV/PDF exports.
 - Taxes: effective-dated reserve assumptions, classification/residency configuration, owner book-profit allocations, earmarked amounts and entity tax payments. No invented rates or automated filing.
 - Retainers: monthly/quarterly/annual contracts, pause/cancel/renewal dates, time entries and idempotent scheduled draft generation.
@@ -77,6 +77,12 @@ Seeding requires an empty client database and refuses production mode. Tests use
 - [API and payload contracts](docs/API.md)
 - [Verification results and acceptance limits](docs/VERIFICATION.md)
 - [Implementation checklist](docs/PROGRESS.md)
+
+## Receipts and expense reviews
+
+In **Expenses**, select **View receipt** to open a PDF or image inside the app. The viewer also offers Download and zoom; PDFs include page navigation. Client attachments use **Clients → client → Files → View document**. DOCX files remain downloadable and display an explicit unsupported-preview message.
+
+For a flagged expense, select **Review**, inspect its receipt and details, enter **Review notes**, and choose **Mark reviewed**. The badge changes to Reviewed and the needs-review count updates. **Review details** preserves who reviewed it, when, and their notes. Enter a reason and select **Reopen review** if it needs another look. Owners can change review status; staff and read-only accounts can inspect receipts and history. Review completion does not change bookkeeping or confirm tax deductibility.
 
 ## Before real business use
 

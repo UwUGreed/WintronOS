@@ -7,6 +7,7 @@ import {
   clientSchema,
   noteSchema,
   expenseSchema,
+  expenseReviewSchema,
   retainerSchema,
   ownerTransactionSchema,
   taxPaymentSchema,
@@ -167,6 +168,47 @@ export async function recordExpense(a: Actor, raw: unknown) {
   authorize(a, "write");
   const data = expenseSchema.parse(raw);
   return transaction((tx) => expenseInTx(tx, a, data));
+}
+export async function reviewExpense(a: Actor, id: string, raw: unknown) {
+  authorize(a, "owner");
+  const data = expenseReviewSchema.parse(raw);
+  return transaction(async (tx) => {
+    const expense = await tx.expense.findFirst({
+      where: { id, organizationId: a.organizationId },
+    });
+    if (!expense) throw new AppError("Expense not found.", 404);
+    if (expense.reversedAt)
+      throw new AppError("Reversed expenses cannot be reviewed.");
+    if (expense.reviewRequired === data.reviewRequired)
+      throw new AppError(
+        "Review status has already changed. Refresh the expense.",
+        409,
+      );
+    const review = await tx.expenseReview.create({
+      data: {
+        expenseId: id,
+        ...data,
+        reviewerId: a.userId,
+        reviewerName: a.name,
+      },
+    });
+    await tx.expense.update({
+      where: { id },
+      data: { reviewRequired: data.reviewRequired },
+    });
+    await audit(
+      tx,
+      a,
+      data.reviewRequired ? "REVIEW_REOPENED" : "REVIEWED",
+      "EXPENSE",
+      id,
+      `${data.reviewRequired ? "Reopened review" : "Reviewed expense"}: ${expense.vendor}. ${data.notes}`,
+      expense.clientId || undefined,
+      { reviewRequired: expense.reviewRequired },
+      { reviewRequired: data.reviewRequired, reviewId: review.id },
+    );
+    return review;
+  });
 }
 export async function reverseExpense(
   a: Actor,

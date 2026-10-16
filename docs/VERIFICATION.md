@@ -5,9 +5,9 @@ Executed locally on October 15, 2026. Automated records are fictional and live i
 ## Passing checks
 
 - Strict TypeScript compilation (`npm run typecheck`).
-- 26 unit/integration tests (`npm test`) using real PostgreSQL.
+- 27 unit/integration tests (`npm test`) using real PostgreSQL.
 - Next.js optimized production build (`npm run build`), including standalone asset copying and removal of local environment files.
-- 6 Chromium end-to-end tests against the built standalone server at loopback port 43817.
+- 7 Chromium end-to-end tests against the built standalone server at loopback port 43817.
 - Dependency audit: zero reported vulnerabilities at verification time (`npm audit`).
 - Encrypted backup and restoration rehearsal (`scripts/test-restore.sh`): restic repository data verification, document hash checks, configuration round-trip, PostgreSQL restore, journal counts and financial invariants. The isolated test container and temporary repository were removed.
 - Shell syntax checks on all backup/restore scripts.
@@ -26,7 +26,8 @@ Invoice rounding, fractional quantities, line discounts and sales tax; allocatio
 3. Mobile navigation at 390 × 844, dialog validation, Escape dismissal, keyboard search focus and horizontal-overflow check.
 4. TOTP enrollment and verification, login challenge with business APIs inaccessible before second factor, recovery-code login.
 5. Simulated data-service failure produces a recoverable error and no invented metrics; retry restores the dashboard.
-6. Authentication rate limiting returns 429.
+6. Receipt PNG preview, zoom, authenticated download, PDF canvas rendering and page navigation in client files; marking an expense reviewed, persisted status/history, reopening with notes; anonymous preview and read-only review mutation rejection.
+7. Authentication rate limiting returns 429.
 
 Desktop screenshots at 1448 × 1086 were inspected against the supplied design. The chart animation was disabled so recorded revenue is visible immediately. Images in `docs/screenshots/` show only fictional test data, not business records.
 
@@ -35,3 +36,11 @@ Desktop screenshots at 1448 × 1086 were inspected against the supplied design. 
 The automated checks are not a production security certification or accountant approval. Actual SMTP delivery, offsite provider credentials/access, key custody, a scheduled offsite recovery drill, actual founder MFA enrollment require the operator's real environment. They were not asserted or fabricated. No external invoice email was sent.
 
 The database-failure browser test simulates a failed API response; it is not a chaos/failover test. PostgreSQL restoration is exercised in a real isolated container. No public endpoint was published. The private Tailscale HTTPS endpoint was subsequently configured and verified; see [current server operations](HOST.md). UI coverage is Chromium desktop/mobile; Safari/Firefox and assistive-technology audits remain independent acceptance work.
+
+## Document preview and expense review update
+
+The isolated PostgreSQL test checks owner-only review actions, cross-organization rejection, required notes, duplicate-state conflicts, immutable history, audit events, unchanged financial journals, blocked financial field edits and rejection after reversal. The browser test waits for actual PDF canvas rendering and extracted page text, rather than merely the presence of a viewer. A two-page fictional PDF was visually inspected; the browser check also asserts painted pixels in the visible part of the canvas. PDF.js and worker/font assets are served locally. DOCX remains downloadable.
+
+The live database now contains operator-provisioned accounts and business records; all automated feature tests continue to use `wintron_test`. Deployment applies an additive sixth migration without rewriting existing expenses or documents.
+
+Deployed October 16, 2026: a protected pre-migration PostgreSQL dump was captured and its archive directory verified. The sixth migration applied successfully, the app/scheduler containers were recreated, and the live HTTPS health, login and PDF-worker requests returned 200. Anonymous private previews returned 401. The local migration snapshot is a rollback precaution, not an offsite backup.

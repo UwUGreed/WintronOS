@@ -233,6 +233,10 @@ export const refundSchema = reasonSchema.extend({
   amount: positiveMoney,
   allocationId: text.optional(),
 });
+export const expenseReviewSchema = z.object({
+  reviewRequired: z.boolean(),
+  notes: z.string().trim().min(5).max(4000),
+});
 export const contactSchema = z.object({
   clientId: short,
   name: short,
