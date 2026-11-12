@@ -1,10 +1,16 @@
 # Wintron OS
 
-Private, self-hosted business management for **Wintron Technologies LLC**. Built with Next.js App Router, React, strict TypeScript, PostgreSQL/Prisma, Better Auth, Decimal.js, Tailwind CSS, Radix dialogs, Lucide and Recharts. The navy dashboard and reusable components follow the supplied reference. Business data starts empty.
+Private, self-hosted business management for **Wintron Technologies LLC**. Built with Next.js App Router, React, strict TypeScript, PostgreSQL/Prisma, Better Auth, Decimal.js, Tailwind CSS, Radix dialogs, Lucide and Recharts. The compact Wintron workspace connects prospect research, pipeline, clients, delivery, and financial records. Business data starts empty.
+
+## Workspace redesign
+
+The updated source adds Overview, Prospecting, Pipeline, Clients, Projects, Money, Automations, and Settings. Existing module URLs and accounting/document workflows remain available. Manual prospect research, evidence, saved searches, opportunity stages and notes, client proposal drafts, and project tasks persist in PostgreSQL. External lead discovery, inbox events, Stripe/bank sync, and signing providers show explicit setup limitations.
+
+Apply the additive `202611110001_workspace` migration when deploying this version. It was verified against the isolated test database and deployed to the existing production app on November 12, 2026, after a verified recovery snapshot. See [workspace verification and rollout](docs/WORKSPACE-VERIFICATION.md) and the [control inventory](docs/CONTROL-INVENTORY.json).
 
 ## Current workspace
 
-The Docker app and scheduler are running on server `100.95.159.90`, accessible through **https://alienwareserver.tail70d8db.ts.net:8443** from a device connected to the tailnet. Docker and Tailscale are enabled at boot, and the containers and HTTPS proxy are configured to resume after reboot. See [this server’s operations notes](docs/HOST.md). Create your first owner from an interactive terminal:
+The Docker app and scheduler are running on server `100.95.159.90`, accessible through **https://wintron-os.tail70d8db.ts.net** from a device connected to the tailnet. Docker and Tailscale are enabled at boot, and the containers and HTTPS proxy are configured to resume after reboot. See [this server’s operations notes](docs/HOST.md). Create your first owner from an interactive terminal:
 
 ```bash
 cd /home/greed/wintron-os

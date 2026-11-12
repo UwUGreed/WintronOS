@@ -2,6 +2,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   LayoutDashboard,
+  Telescope,
+  Columns3,
+  Briefcase,
+  Zap,
   Users,
   FileText,
   Wallet,
@@ -44,7 +48,7 @@ import {
   dateLabel,
   today,
 } from "./ui";
-import { Dashboard, InvoiceTable, RevenueChart } from "./dashboard";
+import { InvoiceTable, RevenueChart } from "./dashboard";
 import { RecordForm, type FormKind } from "./forms";
 import { ClientDetail, InvoiceDetail } from "./details";
 import { SettingsPanel } from "./settings";
@@ -52,20 +56,68 @@ import { DocumentLink } from "./document-preview";
 import { ExpenseReviewDialog } from "./expense-review";
 import { AccountSecurity } from "./account-security";
 import { authClient } from "@/lib/auth-client";
-import { D, ownerAllocations, sum } from "@/lib/money";
+import { D, ownerAllocations, sum, isOverdueInvoice } from "@/lib/money";
 import type { State, Row } from "@/lib/client-types";
+import { Overview } from "./overview";
+import { Prospecting } from "./prospecting";
+import { Pipeline } from "./pipeline";
+import { Projects } from "./projects";
+import { Automations } from "./automations";
+import { MoneySummary, Reconciliation } from "./money-workspace";
+import type { WorkspaceData } from "@/lib/workspace-types";
+const moneyPages = [
+  "invoices",
+  "payments",
+  "expenses",
+  "reconciliation",
+  "reports",
+  "taxes",
+];
+const validPages = [
+  "dashboard",
+  "prospecting",
+  "pipeline",
+  "clients",
+  "projects",
+  "automations",
+  "retainers",
+  "settings",
+  ...moneyPages,
+];
+function readRoute() {
+  const q = new URLSearchParams(location.search);
+  let module = q.get("module") || "dashboard";
+  if (module === "overview") module = "dashboard";
+  if (module === "money")
+    module = moneyPages.includes(q.get("tab") || "")
+      ? q.get("tab")!
+      : "invoices";
+  return {
+    page: validPages.includes(module) ? module : "dashboard",
+    filter: q.get("filter") || "ALL",
+    period: ["month", "quarter", "year"].includes(q.get("period") || "")
+      ? q.get("period")!
+      : "month",
+    record: q.get("record"),
+    client: q.get("client"),
+  };
+}
 const navigation = [
-  { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
+  { id: "dashboard", label: "Overview", Icon: LayoutDashboard },
+  { id: "prospecting", label: "Prospecting", Icon: Telescope },
+  { id: "pipeline", label: "Pipeline", Icon: Columns3 },
   { id: "clients", label: "Clients", Icon: Users },
-  { id: "invoices", label: "Invoices", Icon: FileText },
-  { id: "payments", label: "Payments", Icon: Wallet },
-  { id: "expenses", label: "Expenses", Icon: Receipt },
-  { id: "retainers", label: "Retainers", Icon: RefreshCw },
-  { id: "taxes", label: "Taxes", Icon: Landmark },
-  { id: "reports", label: "Reports", Icon: BarChart3 },
+  { id: "projects", label: "Projects", Icon: Briefcase },
+  { id: "money", label: "Money", Icon: Wallet },
+  { id: "automations", label: "Automations", Icon: Zap },
   { id: "settings", label: "Settings", Icon: Settings },
 ];
 const subtitles: Record<string, string> = {
+  prospecting: "Find, research, and qualify your next client.",
+  pipeline: "Move each opportunity toward a clear next step.",
+  projects: "Client work, ownership, and delivery in one place.",
+  automations: "Your rules, their status, and what happened.",
+  reconciliation: "Compare recorded payments with your bank statement.",
   clients: "Good relationships start with a clear picture.",
   invoices: "From your first draft to the final payment.",
   payments: "Every payment accounted for. Every balance clear.",
@@ -85,6 +137,12 @@ const primary: Record<string, { kind: FormKind; label: string }> = {
 };
 type SearchResult = { id: string; label: string; kind: string; module: string };
 export function Workspace() {
+  const [workspaceData, setWorkspaceData] = useState<WorkspaceData | null>(
+    null,
+  );
+  const [focusRecord, setFocusRecord] = useState<string | null>(null);
+  const [linkOpportunity, setLinkOpportunity] = useState<string | null>(null);
+  const [quickCreate, setQuickCreate] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const [page, setPage] = useState("dashboard");
   const [state, setState] = useState<State | null>(null);
@@ -124,28 +182,38 @@ export function Workspace() {
       : period === "quarter"
         ? `${to.slice(0, 4)}-${String(Math.floor((Number(to.slice(5, 7)) - 1) / 3) * 3 + 1).padStart(2, "0")}-01`
         : to.slice(0, 7) + "-01";
+  const loadSequence = useRef(0);
   const reload = useCallback(async () => {
+    const sequence = ++loadSequence.current;
     try {
-      const data = await api<State>(`state?from=${from}&to=${to}`);
+      const [data, workflow] = await Promise.all([
+        api<State>(`state?from=${from}&to=${to}`),
+        api<WorkspaceData>("workspace"),
+      ]);
+      if (sequence !== loadSequence.current) return;
       setState(data);
+      setWorkspaceData(workflow);
       setError("");
       setRevision((r) => r + 1);
     } catch (e) {
-      setError((e as Error).message);
+      if (sequence === loadSequence.current) setError((e as Error).message);
     }
   }, [from, to]);
   useEffect(() => {
     void reload();
   }, [reload]);
   useEffect(() => {
-    const current = new URLSearchParams(location.search).get("module");
-    if (current && navigation.some((n) => n.id === current)) setPage(current);
     const onPop = () => {
-      setPage(
-        new URLSearchParams(location.search).get("module") || "dashboard",
-      );
-      setDetail(null);
+      const route = readRoute();
+      setPage(route.page);
+      setStatusFilter(route.filter);
+      setPeriod(route.period);
+      setDetail(route.client);
+      setFocusRecord(route.record);
+      setInvoiceId(null);
+      setFilter("");
     };
+    onPop();
     window.addEventListener("popstate", onPop);
     const key = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -187,16 +255,45 @@ export function Workspace() {
     const t = setTimeout(() => setToast(""), 4500);
     return () => clearTimeout(t);
   }, [toast]);
-  const go = (module: string) => {
+  const go = (module: string, status = "ALL", record?: string) => {
+    if (module === "money") module = "invoices";
+    if (!validPages.includes(module)) module = "dashboard";
+    if (module === "reports") setReportType("profit-loss");
     setPage(module);
+    setFocusRecord(record || null);
     setDetail(null);
+    setInvoiceId(null);
     setFilter("");
-    setStatusFilter("ALL");
+    setStatusFilter(status);
     setMobile(false);
     setAccount(false);
     setSecurity(false);
-    history.pushState({}, "", `/?module=${module}`);
+    setQuickCreate(false);
+    const params = new URLSearchParams({
+      module: moneyPages.includes(module)
+        ? "money"
+        : module === "dashboard"
+          ? "overview"
+          : module,
+      period,
+    });
+    if (moneyPages.includes(module)) params.set("tab", module);
+    if (status !== "ALL") params.set("filter", status);
+    if (record) params.set("record", record);
+    history.pushState({}, "", `/?${params}`);
   };
+  const openClient = (id: string) => {
+    go("clients");
+    setDetail(id);
+    const url = new URL(location.href);
+    url.searchParams.set("client", id);
+    history.replaceState({}, "", url);
+  };
+  const activeNav = moneyPages.includes(page)
+    ? "money"
+    : page === "retainers"
+      ? "automations"
+      : page;
   const openForm = (kind: FormKind, initial?: Record<string, unknown>) => {
     if (state?.actor.role === "ACCOUNTANT") {
       setError("Your account has read-only access.");
@@ -220,13 +317,19 @@ export function Workspace() {
           : initial,
     });
   };
+  const actionInFlight = useRef(false);
   async function perform(path: string, data: unknown = {}) {
+    const createsDuplicate = path.endsWith("/duplicate");
+    if (createsDuplicate && actionInFlight.current) return;
+    if (createsDuplicate) actionInFlight.current = true;
     try {
       await api(path, data);
       setToast("Changes saved successfully.");
       await reload();
     } catch (e) {
       setError((e as Error).message);
+    } finally {
+      if (createsDuplicate) actionInFlight.current = false;
     }
   }
   const ask = (path: string, title: string, requiresReason = false) => {
@@ -338,8 +441,8 @@ export function Workspace() {
           {navigation.map(({ id, label, Icon }) => (
             <button
               key={id}
-              className={`nav-item ${page === id ? "active" : ""}`}
-              aria-current={page === id ? "page" : undefined}
+              className={`nav-item ${activeNav === id ? "active" : ""}`}
+              aria-current={activeNav === id ? "page" : undefined}
               onClick={() => go(id)}
             >
               <Icon size={20} strokeWidth={1.8} />
@@ -351,19 +454,12 @@ export function Workspace() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="location-card">
-            <div>
-              <MapPin size={26} />
-              <p>
-                Based in<strong>South Carolina</strong>
-              </p>
-            </div>
+          <div className="sidebar-help">
+            <span className="eyebrow">WINTRON TECHNOLOGIES</span>
             <p>
-              Serving clients nationwide
+              One workspace.
               <br />
-              in websites, software,
-              <br />
-              and cybersecurity.
+              Every next step.
             </p>
           </div>
           <div className="version">
@@ -390,7 +486,7 @@ export function Workspace() {
               aria-label="Search workspace"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search clients, invoices, notes, or anything…"
+              placeholder="Search your workspace…"
             />
             <kbd>⌘ K</kbd>
             {query.length >= 2 && (
@@ -400,9 +496,10 @@ export function Workspace() {
                     <button
                       key={r.id + i}
                       onClick={() => {
-                        go(r.module);
+                        go(r.module, "ALL", r.id);
                         if (r.module === "clients") setDetail(r.id);
-                        else setInvoiceId(r.id);
+                        else if (r.module === "invoices") setInvoiceId(r.id);
+                        else setFocusRecord(r.id);
                         setQuery("");
                       }}
                     >
@@ -417,6 +514,15 @@ export function Workspace() {
             )}
           </div>
           <div className="header-actions">
+            {write && (
+              <button
+                className="button secondary quick-create"
+                onClick={() => setQuickCreate(true)}
+              >
+                <Plus size={16} />
+                Quick create
+              </button>
+            )}
             <div className="popover-anchor">
               <button
                 className="icon-button notification-button"
@@ -521,7 +627,11 @@ export function Workspace() {
                   ? "Account security"
                   : page === "dashboard"
                     ? `${greeting}, ${state?.actor.name.split(" ")[0] || "there"}`
-                    : navigation.find((n) => n.id === page)?.label}
+                    : moneyPages.includes(page)
+                      ? "Money"
+                      : page === "retainers"
+                        ? "Recurring contracts"
+                        : navigation.find((n) => n.id === page)?.label}
               </h1>
               <p>
                 {security
@@ -532,13 +642,18 @@ export function Workspace() {
               </p>
             </div>
             <div className="heading-actions">
-              {["dashboard", "reports", "taxes"].includes(page) && (
+              {["dashboard", ...moneyPages].includes(page) && (
                 <>
                   <span className="current-date">{dateString}</span>
                   <select
                     aria-label="Reporting period"
                     value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
+                    onChange={(e) => {
+                      setPeriod(e.target.value);
+                      const url = new URL(location.href);
+                      url.searchParams.set("period", e.target.value);
+                      history.replaceState({}, "", url);
+                    }}
                   >
                     <option value="month">This month</option>
                     <option value="quarter">This quarter</option>
@@ -582,7 +697,7 @@ export function Workspace() {
           )}
           {security ? (
             <AccountSecurity />
-          ) : !state ? (
+          ) : !state || !workspaceData ? (
             <>
               <div className="metrics">
                 {[1, 2, 3, 4].map((i) => (
@@ -601,14 +716,82 @@ export function Workspace() {
             </>
           ) : (
             <>
+              {moneyPages.includes(page) && (
+                <>
+                  <nav className="tabs" aria-label="Money sections">
+                    {moneyPages.map((p) => (
+                      <button
+                        key={p}
+                        className={page === p ? "active" : ""}
+                        aria-current={page === p ? "page" : undefined}
+                        onClick={() => go(p)}
+                      >
+                        {p === "taxes"
+                          ? "Tax planning"
+                          : p[0].toUpperCase() + p.slice(1)}
+                      </button>
+                    ))}
+                  </nav>
+                  <MoneySummary state={state} go={go} />
+                </>
+              )}
               {page === "dashboard" && (
-                <Dashboard
+                <Overview
                   state={state}
+                  data={workspaceData}
                   go={go}
                   openForm={openForm}
                   openInvoice={setInvoiceId}
                   onActivity={() => setActivityOpen(true)}
                 />
+              )}
+              {page === "prospecting" && (
+                <Prospecting
+                  initialStatus={statusFilter}
+                  openId={focusRecord}
+                  data={workspaceData}
+                  write={write}
+                  reload={reload}
+                  go={go}
+                />
+              )}
+              {page === "pipeline" && (
+                <Pipeline
+                  initialStatus={statusFilter}
+                  openId={focusRecord}
+                  data={workspaceData}
+                  state={state}
+                  reload={reload}
+                  openClient={openClient}
+                  createClient={(initial, opportunityId) => {
+                    setLinkOpportunity(opportunityId);
+                    openForm("client", initial);
+                  }}
+                />
+              )}
+              {page === "projects" && (
+                <Projects
+                  initialStatus={statusFilter}
+                  openId={focusRecord}
+                  data={workspaceData}
+                  write={write}
+                  reload={reload}
+                  openForm={openForm}
+                  openClient={openClient}
+                />
+              )}
+              {page === "automations" && (
+                <Automations
+                  data={workspaceData}
+                  state={state}
+                  reload={reload}
+                  openForm={openForm}
+                  go={go}
+                  ask={ask}
+                />
+              )}
+              {page === "reconciliation" && (
+                <Reconciliation state={state} reload={reload} />
               )}
               {page === "clients" &&
                 (detail ? (
@@ -716,22 +899,9 @@ export function Workspace() {
                 ))}
               {page === "invoices" && (
                 <>
-                  <div className="metrics three">
-                    {[
-                      ["Outstanding balance", state.outstanding],
-                      ["Overdue balance", state.overdue],
-                      ["Period cash collected", state.cashCollected],
-                    ].map(([label, value]) => (
-                      <Card key={label}>
-                        <span className="muted">{label}</span>
-                        <strong className="summary-value">
-                          {currency(value)}
-                        </strong>
-                      </Card>
-                    ))}
-                  </div>
                   <Card>
                     {toolbar([
+                      "OUTSTANDING",
                       "DRAFT",
                       "ISSUED",
                       "PARTIALLY_PAID",
@@ -745,7 +915,12 @@ export function Workspace() {
                           (i) =>
                             matches(i.number, i.description, i.client.name) &&
                             (statusFilter === "ALL" ||
-                              i.displayStatus === statusFilter),
+                              i.displayStatus === statusFilter ||
+                              (statusFilter === "OVERDUE" &&
+                                isOverdueInvoice(i)) ||
+                              (statusFilter === "OUTSTANDING" &&
+                                i.status === "ISSUED" &&
+                                Number(i.balance) > 0)),
                         )}
                         onOpen={setInvoiceId}
                       />
@@ -762,30 +937,22 @@ export function Workspace() {
               )}
               {page === "payments" && (
                 <>
-                  <div className="metrics three">
-                    <Card>
-                      <span className="muted">
-                        Cash collected · selected period
-                      </span>
-                      <strong className="summary-value">
-                        {currency(state.cashCollected)}
-                      </strong>
-                    </Card>
-                    <Card>
-                      <span className="muted">Payment records</span>
-                      <strong className="summary-value">
-                        {state.payments.length}
-                      </strong>
-                    </Card>
-                    <Card>
-                      <span className="muted">Awaiting reconciliation</span>
-                      <strong className="summary-value">
-                        {state.payments.filter((p) => !p.reconciled).length}
-                      </strong>
-                    </Card>
-                  </div>
                   <Card>
                     {toolbar()}
+                    <div className="table-toolbar">
+                      <label>
+                        <span>Payment date range</span>
+                        <select
+                          value={statusFilter === "PERIOD" ? "PERIOD" : "ALL"}
+                          onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                          <option value="ALL">All dates</option>
+                          <option value="PERIOD">
+                            Selected reporting period
+                          </option>
+                        </select>
+                      </label>
+                    </div>
                     {state.payments.length ? (
                       <Table
                         headers={[
@@ -798,7 +965,13 @@ export function Workspace() {
                         ]}
                       >
                         {state.payments
-                          .filter((p) => matches(p.client.name, p.reference))
+                          .filter(
+                            (p) =>
+                              matches(p.client.name, p.reference) &&
+                              (statusFilter !== "PERIOD" ||
+                                (p.receivedAt.slice(0, 10) >= from &&
+                                  p.receivedAt.slice(0, 10) <= to)),
+                          )
                           .map((p) => (
                             <tr key={p.id}>
                               <td>{p.client.name}</td>
@@ -885,35 +1058,6 @@ export function Workspace() {
               )}
               {page === "expenses" && (
                 <>
-                  <div className="metrics three">
-                    <Card>
-                      <span className="muted">
-                        Book expenses · selected period
-                      </span>
-                      <strong className="summary-value">
-                        {currency(state.expensesTotal)}
-                      </strong>
-                    </Card>
-                    <Card>
-                      <span className="muted">Needs accountant review</span>
-                      <strong className="summary-value">
-                        {
-                          state.expenses.filter(
-                            (e) => e.reviewRequired && !e.reversedAt,
-                          ).length
-                        }
-                      </strong>
-                    </Card>
-                    <Card>
-                      <span className="muted">Receipts on file</span>
-                      <strong className="summary-value">
-                        {state.expenses.reduce(
-                          (n, e) => n + e.documents.length,
-                          0,
-                        )}
-                      </strong>
-                    </Card>
-                  </div>
                   <Card>
                     {toolbar()}
                     {state.expenses.length ? (
@@ -1755,6 +1899,47 @@ export function Workspace() {
           </footer>
         </main>
       </div>
+      {quickCreate && (
+        <Modal
+          title="Quick create"
+          description="Choose what to add to your workspace."
+          onClose={() => setQuickCreate(false)}
+        >
+          <div className="quick-create-grid">
+            {(
+              [
+                ["client", "Add client"],
+                ["project", "Add project"],
+                ["invoice", "Create invoice"],
+                ["payment", "Record payment"],
+                ["expense", "Record expense"],
+                ["retainer", "Configure recurring contract"],
+              ] as [FormKind, string][]
+            ).map(([kind, label]) => (
+              <button
+                className="button secondary"
+                key={kind}
+                onClick={() => {
+                  setQuickCreate(false);
+                  openForm(kind);
+                }}
+              >
+                <Plus size={16} />
+                {label}
+              </button>
+            ))}
+            <button
+              className="button secondary"
+              onClick={() => go("prospecting")}
+            >
+              Add prospect →
+            </button>
+            <button className="button secondary" onClick={() => go("pipeline")}>
+              Add opportunity →
+            </button>
+          </div>
+        </Modal>
+      )}
       {activityOpen && state && (
         <Modal
           title="Recent workspace activity"
@@ -1781,10 +1966,32 @@ export function Workspace() {
           kind={form.kind}
           state={state}
           initial={form.initial}
-          onClose={() => setForm(null)}
-          onSaved={() => {
+          onClose={() => {
+            setForm(null);
+            setLinkOpportunity(null);
+          }}
+          onSaved={async (record) => {
+            if (linkOpportunity && form.kind === "client" && record?.id) {
+              const opportunity = workspaceData?.opportunities.find(
+                (o) => o.id === linkOpportunity,
+              );
+              if (opportunity) {
+                try {
+                  await api(`opportunities/${opportunity.id}`, {
+                    ...opportunity,
+                    clientId: record.id,
+                    followUp: opportunity.followUp?.slice(0, 10) || "",
+                  });
+                } catch (e) {
+                  setError(
+                    `Client saved. Linking failed: ${(e as Error).message}. Select this client in the opportunity to retry.`,
+                  );
+                }
+              }
+              setLinkOpportunity(null);
+            }
             setToast("Record saved.");
-            void reload();
+            await reload();
           }}
         />
       )}
@@ -1847,7 +2054,7 @@ export function Workspace() {
                   ? "Issuing assigns a permanent invoice number and posts accounts receivable and revenue to the ledger."
                   : confirmation.path.endsWith("/send")
                     ? "The configured SMTP provider will send the PDF to the client’s billing email."
-                    : "Due billing periods will create draft invoices for your review. Previously generated periods are skipped."}
+                    : "Due billing periods will create draft invoices, and due recurring expenses will be posted. Previously generated periods are skipped."}
               </p>
             )}
           </div>
@@ -1870,19 +2077,26 @@ export function Workspace() {
           </div>
         </Modal>
       )}
-      {toast && (
-        <div className="toast" role="status">
-          <Check size={17} />
-          {toast}
-          <button
-            className="icon-button"
-            aria-label="Dismiss notification"
-            onClick={() => setToast("")}
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
+      <div
+        className={toast ? "toast" : "sr-only"}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {toast && (
+          <>
+            <Check size={17} />
+            {toast}
+            <button
+              className="icon-button"
+              aria-label="Dismiss notification"
+              onClick={() => setToast("")}
+            >
+              <X size={14} />
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,16 +1,17 @@
 "use client";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Plus, Inbox, ChevronRight } from "lucide-react";
-import type { ReactNode } from "react";
+import { Children, useRef, type ReactNode } from "react";
 export function Logo() {
   return (
     <div className="brand">
-      <svg width="47" height="40" viewBox="0 0 52 42" aria-hidden="true">
-        <path fill="#78b8ff" d="M1 5h11l13 31H14z" />
-        <path fill="#327ff0" d="M18 5h10l13 31H30z" />
-        <path fill="#195aa7" d="M42 5h10L41 36H30z" />
-        <path fill="#559fff" d="M29 5H18l-5 13 6 14z" />
-      </svg>
+      <img
+        className="brand-mark"
+        src="/mark.svg"
+        width="36"
+        height="36"
+        alt="Wintron Technologies"
+      />
       <div>
         <strong>Wintron OS</strong>
         <small>Wintron Technologies LLC</small>
@@ -105,11 +106,31 @@ export function Modal({
   onClose: () => void;
   wide?: boolean;
 }) {
+  const content = useRef<HTMLDivElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(
+    typeof document === "undefined"
+      ? null
+      : (document.activeElement as HTMLElement),
+  );
+  const close = () => {
+    if (
+      !content.current?.querySelector('[data-unsaved="true"]') ||
+      window.confirm("Discard unsaved changes?")
+    )
+      onClose();
+  };
   return (
-    <Dialog.Root open onOpenChange={(v) => !v && onClose()}>
+    <Dialog.Root open onOpenChange={(v) => !v && close()}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-overlay" />
-        <Dialog.Content className={`modal ${wide ? "wide" : ""}`}>
+        <Dialog.Content
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            if (returnFocus.current?.isConnected) returnFocus.current.focus();
+          }}
+          ref={content}
+          className={`modal ${wide ? "wide" : ""}`}
+        >
           <div className="modal-heading">
             <div>
               <Dialog.Title>{title}</Dialog.Title>
@@ -144,7 +165,20 @@ export function Table({
             ))}
           </tr>
         </thead>
-        <tbody>{children}</tbody>
+        <tbody>
+          {Children.toArray(children).length ? (
+            children
+          ) : (
+            <tr>
+              <td colSpan={headers.length}>
+                <p className="inset-copy muted">
+                  No records match this view. Adjust the filters or add a record
+                  to continue.
+                </p>
+              </td>
+            </tr>
+          )}
+        </tbody>
       </table>
     </div>
   );

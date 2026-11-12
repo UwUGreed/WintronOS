@@ -2,7 +2,7 @@ import { businessDate } from "./dates";
 import Decimal from "decimal.js";
 Decimal.set({ precision: 32, rounding: Decimal.ROUND_HALF_UP });
 export const D = Object.assign((value: Decimal.Value) => new Decimal(value), {
-  max: Decimal.max,
+  max: (...values: Decimal.Value[]) => Decimal.max(...values),
 });
 export const cents = (value: Decimal.Value) => D(value).toDecimalPlaces(2);
 export const sum = (values: Decimal.Value[]) =>
@@ -99,4 +99,16 @@ export function invoiceStatus(
   if (D(balance).eq(0)) return "PAID";
   if (D(balance).lt(invoice.total)) return "PARTIALLY_PAID";
   return invoice.dueDate < businessDate() ? "OVERDUE" : "ISSUED";
+}
+
+/** Past-due receivables include partially paid invoices with a remaining balance. */
+export function isOverdueInvoice(
+  invoice: { status: string; balance: Decimal.Value; dueDate: string | Date },
+  asOf = businessDate(),
+) {
+  return (
+    invoice.status === "ISSUED" &&
+    D(invoice.balance).gt(0) &&
+    new Date(invoice.dueDate) < asOf
+  );
 }

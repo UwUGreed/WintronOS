@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Plus, Trash2, LoaderCircle, Info } from "lucide-react";
 import { Modal, api, today, currency } from "./ui";
 import type { State, Row, Line, Invoice } from "@/lib/client-types";
@@ -65,14 +65,14 @@ export function RecordForm({
   kind,
   state,
   initial = {},
-  onClose,
+  onClose: dismiss,
   onSaved,
 }: {
   kind: FormKind;
   state: State;
   initial?: Row | Record<string, unknown>;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (record?: Row) => void | Promise<void>;
 }) {
   const clientOpts = state.clients.map((c) => ({ value: c.id, label: c.name }));
   const [values, setValues] = useState<Record<string, string>>(() =>
@@ -143,6 +143,18 @@ export function RecordForm({
   const [review, setReview] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [dirty, setDirty] = useState(false);
+  const onClose = () => {
+    if (!busy && (!dirty || window.confirm("Discard unsaved changes?")))
+      dismiss();
+  };
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (dirty) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const f = (
     name: string,
@@ -288,11 +300,12 @@ export function RecordForm({
       ],
     },
     project: {
-      title: "Add project",
+      title: initial.id ? "Edit project" : "Add project",
       endpoint: "projects",
       fields: [
         client,
         f("name", "Project name", "text", true),
+        f("ownerName", "Project owner"),
         f("description", "Description", "textarea", false, true),
         select(
           "status",
@@ -487,7 +500,8 @@ export function RecordForm({
     },
   };
   const def = definitions[kind];
-  const change = (name: string, value: string) =>
+  const change = (name: string, value: string) => {
+    setDirty(true);
     setValues((v) => ({
       ...v,
       [name]: value,
@@ -495,6 +509,7 @@ export function RecordForm({
         ? { accountCode: categoryCodes[categories.indexOf(value)] }
         : {}),
     }));
+  };
   const renderField = (field: Field) => (
     <label className={field.span ? "span-2" : ""} key={field.name}>
       <span>
@@ -562,6 +577,7 @@ export function RecordForm({
   );
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setError("");
     setBusy(true);
     try {
@@ -592,7 +608,7 @@ export function RecordForm({
         data.reviewRequired = review;
         data.recurringInterval = values.recurringInterval || null;
       }
-      await api(
+      const record = await api<Row>(
         def.endpoint +
           (initial.id &&
           [
@@ -607,8 +623,9 @@ export function RecordForm({
             : ""),
         data,
       );
-      onSaved();
-      onClose();
+      setDirty(false);
+      await onSaved(record);
+      dismiss();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -634,7 +651,7 @@ export function RecordForm({
       onClose={onClose}
       wide={kind === "invoice" || kind === "journal"}
     >
-      <form onSubmit={submit}>
+      <form onSubmit={submit} onChange={() => setDirty(true)}>
         <div className="modal-body">
           <div className="form-grid">{def.fields.map(renderField)}</div>
           {kind === "invoice" && (

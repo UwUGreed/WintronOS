@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   calculateInvoice,
+  isOverdueInvoice,
   D,
   nextBillingDate,
   remaining,
@@ -24,6 +25,28 @@ const line = {
   serviceCategory: "Services",
 };
 describe("financial calculations", () => {
+  it("includes partially paid overdue balances without treating drafts, voids or paid invoices as overdue", () => {
+    const invoice = {
+      status: "ISSUED",
+      balance: "60.00",
+      dueDate: "2026-01-01",
+    };
+    const asOf = new Date("2026-01-02");
+    expect(isOverdueInvoice(invoice, asOf)).toBe(true);
+    expect(isOverdueInvoice({ ...invoice, balance: "0" }, asOf)).toBe(false);
+    expect(isOverdueInvoice({ ...invoice, status: "DRAFT" }, asOf)).toBe(false);
+    expect(isOverdueInvoice({ ...invoice, status: "VOID" }, asOf)).toBe(false);
+    expect(isOverdueInvoice(invoice, new Date("2026-01-01"))).toBe(false);
+  });
+  it("splits signed trial-balance amounts without losing Decimal constructor context", () => {
+    expect(D.max(0, "125.43").toFixed(2)).toBe("125.43");
+    expect(D.max(0, "-125.43").toFixed(2)).toBe("0.00");
+    expect(D.max(0, D("-125.43").negated()).toFixed(2)).toBe("125.43");
+    const maximum = D.max;
+    expect(
+      maximum("9007199254740993.01", "9007199254740993.02").toFixed(2),
+    ).toBe("9007199254740993.02");
+  });
   it("rounds discount and tax per line with decimal half-up arithmetic", () => {
     const result = calculateInvoice([line]);
     expect(result.subtotal).toBe("59.97");

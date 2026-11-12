@@ -220,6 +220,7 @@ export const taxPaymentSchema = z.object({
   reference: short,
 });
 export const projectSchema = z.object({
+  ownerName: text.default(""),
   clientId: short,
   name: short,
   description: long.default(""),

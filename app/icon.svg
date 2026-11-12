@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="52" height="42" viewBox="0 0 52 42"><path fill="#78b8ff" d="M1 5h11l13 31H14z"/><path fill="#327ff0" d="M18 5h10l13 31H30z"/><path fill="#195aa7" d="M42 5h10L41 36H30z"/><path fill="#559fff" d="M29 5H18l-5 13 6 14z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Wintron Technologies">
+  <circle cx="256" cy="256" r="244" fill="#fff" stroke="#1c4274" stroke-width="13"/>
+  <path fill="#08090b" d="M54 173h74l29 79 34-79h46l20 59 26-43q8-16 25-16h148v54h-42v119h-66l-33-64-44 64h-51l-15-43-30 43h-59z"/>
+  <path fill="#1c4274" stroke="#fff" stroke-width="6" stroke-linejoin="round" d="M207 348c26-25 26-54 60-91l28-29-35 10c21-19 45-26 69-25 4-8 7-12 13-16 5 7 6 13 6 22l67-39-55 50 10 11 4 11 18 18c10 9 7 22-3 25-8 3-12-1-16-6-10-9-24-3-32-9-6-4-9-10-10-16-23 24-20 54 4 84z"/>
+</svg>

@@ -19,6 +19,13 @@ export type Client = Row & {
   documents?: Row[];
   activity?: Activity[];
   contacts?: Row[];
+  proposals?: (Row & {
+    title: string;
+    content: string;
+    status: string;
+    createdAt: string;
+  })[];
+  opportunities?: (Row & { name: string; stage: string; createdAt: string })[];
 };
 export type Note = Row & {
   title: string;
@@ -127,6 +134,7 @@ export type Owner = Row & {
   transactions: Row[];
 };
 export type State = {
+  smtpConfigured: boolean;
   actor: { name: string; userId: string; role: string };
   organization: Row & {
     name: string;

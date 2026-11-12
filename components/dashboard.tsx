@@ -26,7 +26,7 @@ import {
 import { Card, Badge, Empty, Table, ViewAll, currency, dateLabel } from "./ui";
 import type { State, Invoice } from "@/lib/client-types";
 import type { FormKind } from "./forms";
-import { D } from "@/lib/money";
+import { D, isOverdueInvoice } from "@/lib/money";
 export function RevenueChart({ state }: { state: State }) {
   return (
     <div className="chart">
@@ -99,7 +99,8 @@ export function InvoiceTable({
         "Invoice #",
         "Client",
         "Description",
-        "Amount",
+        "Invoice total",
+        "Balance due",
         "Status",
         "Due date",
       ]}
@@ -114,8 +115,12 @@ export function InvoiceTable({
           <td>{i.client.name}</td>
           <td className="muted truncate">{i.description}</td>
           <td className="money">{currency(i.total)}</td>
+          <td className="money">{currency(i.balance)}</td>
           <td>
             <Badge value={i.displayStatus} />
+            {i.displayStatus !== "OVERDUE" && isOverdueInvoice(i) && (
+              <Badge value="OVERDUE" />
+            )}
           </td>
           <td className="muted nowrap">{dateLabel(i.dueDate)}</td>
         </tr>

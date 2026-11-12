@@ -109,15 +109,9 @@ test("complete client, invoice, payment, expense and recurring billing workflow"
     page.getByRole("dialog").getByText("paid", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Close dialog" }).click();
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Reports", exact: true })
-    .click();
+  await page.goto("/?module=reports");
   await expect(page.getByText("$100.00").first()).toBeVisible();
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Expenses", exact: true })
-    .click();
+  await page.goto("/?module=expenses");
   await page
     .getByRole("button", { name: "Record expense", exact: true })
     .first()
@@ -133,10 +127,7 @@ test("complete client, invoice, payment, expense and recurring billing workflow"
   await dialog.getByLabel("Category", { exact: true }).selectOption("Hosting");
   await dialog.getByRole("button", { name: "Save record" }).click();
   await expect(page.getByText("Example Hosting Vendor")).toBeVisible();
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Retainers", exact: true })
-    .click();
+  await page.goto("/?module=retainers");
   await page.getByRole("button", { name: "Add retainer", exact: true }).click();
   dialog = page.getByRole("dialog");
   await dialog
@@ -152,31 +143,22 @@ test("complete client, invoice, payment, expense and recurring billing workflow"
     .getByRole("button", { name: "Confirm" })
     .click();
   await expect(page.getByRole("dialog")).toBeHidden();
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: /Invoices/ })
-    .click();
+  await page.goto("/?module=invoices");
   await expect(page.getByText("Example maintenance")).toBeVisible();
   await page.reload();
   await expect(page.getByText("Example maintenance")).toBeVisible();
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Reports", exact: true })
-    .click();
+  await page.goto("/?module=reports");
   await expect(page.getByText("$80.00").first()).toBeVisible();
   for (const module of ["Payments", "Taxes", "Settings"]) {
-    await page
-      .getByRole("navigation")
-      .getByRole("button", { name: module, exact: true })
-      .click();
+    await page.goto("/?module=" + module.toLowerCase());
     await expect(
-      page.getByRole("heading", { name: module, exact: true }),
+      page.getByRole("heading", {
+        name: module === "Settings" ? "Settings" : "Money",
+        exact: true,
+      }),
     ).toBeVisible();
   }
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Dashboard", exact: true })
-    .click();
+  await page.goto("/?module=dashboard");
   await page.screenshot({
     path: ".data/dashboard-populated.png",
     fullPage: true,
@@ -308,7 +290,9 @@ test("failed data requests show a recoverable error without fabricated metrics",
   await page.unroute("**/api/state?**");
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(page.locator(".global-error")).toBeHidden();
-  await expect(page.getByText("Period revenue", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Outstanding invoices", { exact: true }),
+  ).toBeVisible();
 });
 test("receipt previews, client PDFs and auditable expense review", async ({
   page,
@@ -357,10 +341,7 @@ test("receipt previews, client PDFs and auditable expense review", async ({
   });
   expect(upload.ok()).toBeTruthy();
   const receipt = await upload.json();
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Expenses", exact: true })
-    .click();
+  await page.goto("/?module=expenses");
   await page.reload();
   const row = page
     .getByRole("row")

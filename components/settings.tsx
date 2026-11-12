@@ -28,7 +28,13 @@ export function SettingsPanel({
   revision: number;
   onError: (message: string) => void;
 }) {
-  const [tab, setTab] = useState("Organization");
+  const [tab, setTab] = useState(() =>
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("section") ===
+      "integrations"
+      ? "Integrations"
+      : "Organization",
+  );
   const [settings, setSettings] = useState<Settings | null>(null);
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -278,7 +284,35 @@ export function SettingsPanel({
               PDFs work without email configuration.
             </p>
           </Card>
+          <Card title="Lead discovery">
+            <Badge value="NOT_CONNECTED" />
+            <p>No lead-search provider is implemented.</p>
+            <p className="muted">
+              An administrator must implement a search provider adapter with
+              source attribution, then configure its credentials on the server.
+              Adding a key alone will not enable search. Manual prospect
+              research and saved searches work now.
+            </p>
+            <p className="muted">Last successful search: never.</p>
+          </Card>
+          <Card title="Communication inbox">
+            <Badge value="NOT_CONNECTED" />
+            <p>Inbound email and reply events are unavailable.</p>
+            <p className="muted">
+              Connect an inbox provider and implement event handling before
+              enabling reply-based rules. SMTP only sends invoice emails; it
+              does not read replies.
+            </p>
+            <p className="muted">Last successful sync: never.</p>
+          </Card>
           <Card title="Payments & bank accounts">
+            <Badge value="NOT_CONNECTED" />
+            <p className="muted">
+              Stripe and bank adapters are not implemented. An administrator
+              must add an adapter with verified webhook handling and duplicate
+              detection before configuring credentials. Last successful sync:
+              never.
+            </p>
             <p>
               Record payments received through your existing bank or payment
               processor.

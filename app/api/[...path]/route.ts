@@ -1,3 +1,13 @@
+import {
+  workspaceData,
+  saveProspect,
+  convertProspect,
+  saveOpportunity,
+  addOpportunityNote,
+  saveTask,
+  saveSearch,
+  saveProposal,
+} from "@/lib/services/workspace";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
@@ -108,6 +118,7 @@ async function handle(
     const organizationId = a.organizationId;
     if (method !== "GET") checkOrigin(request);
     if (method === "GET") {
+      if (resource === "workspace") return json(await workspaceData(a));
       if (resource === "state") {
         const { from, to } = range(request);
         const [report, organization, clients, activity, notifications] =
@@ -133,6 +144,7 @@ async function handle(
             }),
           ]);
         return json({
+          smtpConfigured: !!process.env.SMTP_HOST && !!process.env.SMTP_FROM,
           actor: a,
           organization,
           clients,
@@ -145,6 +157,8 @@ async function handle(
         const client = await db.client.findFirst({
           where: { id, organizationId },
           include: {
+            proposals: true,
+            opportunities: { include: { prospect: true } },
             contacts: true,
             notes: {
               include: { revisions: true },
@@ -232,7 +246,36 @@ async function handle(
             { id: string; clientId: string; title: string }[]
           >`SELECT n.id, n."clientId", n.title FROM "ClientNote" n JOIN "Client" c ON c.id=n."clientId" WHERE c."organizationId"=${organizationId} AND (to_tsvector('english', n.title || ' ' || n.content) @@ plainto_tsquery('english', ${q}) OR n.title ILIKE ${"%" + q + "%"}) ORDER BY n."updatedAt" DESC LIMIT 8`,
         ]);
+        const [prospects, opportunities] = await Promise.all([
+          db.prospect.findMany({
+            where: {
+              organizationId,
+              OR: [
+                { name: contains },
+                { email: contains },
+                { industry: contains },
+              ],
+            },
+            take: 8,
+          }),
+          db.opportunity.findMany({
+            where: { organizationId, name: contains },
+            take: 8,
+          }),
+        ]);
         return json([
+          ...prospects.map((p) => ({
+            id: p.id,
+            label: p.name,
+            kind: "Prospect",
+            module: "prospecting",
+          })),
+          ...opportunities.map((o) => ({
+            id: o.id,
+            label: o.name,
+            kind: "Opportunity",
+            module: "pipeline",
+          })),
           ...clients.map((c) => ({
             id: c.id,
             label: c.name,
@@ -474,6 +517,22 @@ async function handle(
       if (resource === "documents")
         return json(await upload(a, await readMultipart(request)), 201);
       const raw = await body(request);
+      if (resource === "prospects")
+        return json(
+          action === "convert" && id
+            ? await convertProspect(a, id)
+            : await saveProspect(a, raw, id),
+        );
+      if (resource === "opportunities")
+        return json(
+          action === "notes" && id
+            ? await addOpportunityNote(a, id, raw)
+            : await saveOpportunity(a, raw, id),
+        );
+      if (resource === "tasks") return json(await saveTask(a, raw, id));
+      if (resource === "saved-searches") return json(await saveSearch(a, raw));
+      if (resource === "proposals") return json(await saveProposal(a, raw, id));
+
       if (resource === "clients") return json(await saveClient(a, raw, id));
       if (resource === "notes") return json(await saveNote(a, raw, id));
       if (resource === "invoices") {
@@ -601,7 +660,23 @@ async function handle(
         }
       }
       if (resource === "retainers") {
-        if (id === "run") return json(await runRecurring(a));
+        if (id === "run") {
+          authorize(a, "write");
+          try {
+            return json(await runRecurring(a));
+          } catch (error) {
+            await db.jobRun.create({
+              data: {
+                organizationId,
+                kind: "RECURRING",
+                status: "FAILED",
+                detail:
+                  "Recurring run interrupted. Check database health and billing configuration, then retry. Completed periods are skipped.",
+              },
+            });
+            throw error;
+          }
+        }
         if (action === "time") {
           authorize(a, "write");
           const data = z
@@ -921,7 +996,7 @@ async function handle(
     return json(
       {
         error:
-          "The operation could not be completed. No partial financial changes were committed. Check server health and try again.",
+          "The operation could not be completed. Refresh records before retrying. Check server health and try again.",
       },
       503,
     );

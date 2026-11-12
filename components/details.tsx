@@ -32,6 +32,8 @@ import {
 import type { Client, State, Row, Invoice } from "@/lib/client-types";
 import type { FormKind } from "./forms";
 import { DocumentLink } from "./document-preview";
+import { ClientJourney } from "./client-journey";
+import { isOverdueInvoice } from "@/lib/money";
 import { InvoiceTable } from "./dashboard";
 export function InvoiceDetail({
   invoice,
@@ -72,6 +74,8 @@ export function InvoiceDetail({
           </div>
           <div className="align-right">
             <Badge value={invoice.displayStatus} />
+            {invoice.displayStatus !== "OVERDUE" &&
+              isOverdueInvoice(invoice) && <Badge value="OVERDUE" />}
             <p className="muted">Issued {dateLabel(invoice.issueDate)}</p>
             <p className="muted">Due {dateLabel(invoice.dueDate)}</p>
           </div>
@@ -117,6 +121,13 @@ export function InvoiceDetail({
         {invoice.notes && <p>{invoice.notes}</p>}
         {invoice.paymentInstructions && (
           <p className="notice">{invoice.paymentInstructions}</p>
+        )}
+        {!state.smtpConfigured && invoice.status === "ISSUED" && (
+          <p className="notice">
+            Email delivery is unavailable. Configure SMTP in Settings →
+            Integrations, or download the PDF and record delivery after sending
+            it yourself.
+          </p>
         )}
         <div className="button-row">
           <a
@@ -165,6 +176,7 @@ export function InvoiceDetail({
                   <>
                     <button
                       className="button secondary"
+                      disabled={!state.smtpConfigured}
                       onClick={() =>
                         ask(
                           `invoices/${invoice.id}/send`,
@@ -259,7 +271,7 @@ export function ClientDetail({
   onError: (message: string) => void;
 }) {
   const [client, setClient] = useState<Client | null>(null);
-  const [tab, setTab] = useState("Overview");
+  const [tab, setTab] = useState("Journey");
   const [uploading, setUploading] = useState(false);
   const [history, setHistory] = useState<Row[] | null>(null);
   const write = state.actor.role !== "ACCOUNTANT";
@@ -318,6 +330,7 @@ export function ClientDetail({
       <div className="tabs" role="tablist" aria-label="Client sections">
         {[
           "Overview",
+          "Journey",
           "Notes",
           "Invoices",
           "Payments",
@@ -337,6 +350,16 @@ export function ClientDetail({
           </button>
         ))}
       </div>
+      {tab === "Journey" && (
+        <ClientJourney
+          client={client}
+          write={write}
+          reload={load}
+          openForm={openForm}
+          openInvoice={openInvoice}
+          openTab={setTab}
+        />
+      )}
       {tab === "Overview" && (
         <div className="two-columns">
           <Card title="Client details" icon={<Users size={19} />}>

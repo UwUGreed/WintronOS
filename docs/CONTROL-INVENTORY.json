@@ -1,0 +1,1373 @@
+{
+  "description": "Static control sites, including dynamic controls. This is an inventory, not a claim that every permutation was clicked. See WORKSPACE-VERIFICATION.md for evidence.",
+  "controls": [
+    {
+      "file": "app/error.tsx",
+      "line": 11,
+      "control": "button",
+      "label": " Try again "
+    },
+    {
+      "file": "app/login/page.tsx",
+      "line": 58,
+      "control": "input",
+      "label": " {recovery ? \"Recovery code\" : \"Authenticator code\"} setCode(e.target.value)} required /> "
+    },
+    {
+      "file": "app/login/page.tsx",
+      "line": 70,
+      "control": "input",
+      "label": "placeholder=\"you@your-company.com\""
+    },
+    {
+      "file": "app/login/page.tsx",
+      "line": 81,
+      "control": "input",
+      "label": " Password setPassword(e.target.value)} /> "
+    },
+    {
+      "file": "app/login/page.tsx",
+      "line": 96,
+      "control": "button",
+      "label": " {busy ? \"Please wait…\" : mfa ? \"Verify and sign in\" : \"Sign in\"} "
+    },
+    {
+      "file": "app/login/page.tsx",
+      "line": 101,
+      "control": "button",
+      "label": " { setRecovery(!recovery); setCode(\"\"); }} > {recovery ? \"Use authenticator\" : \"Use a recovery code\"} "
+    },
+    {
+      "file": "components/account-security.tsx",
+      "line": 87,
+      "control": "input",
+      "label": " Six-digit authenticator code setCode(e.target.value)} inputMode=\"numeric\" autoComplete=\"one-time-code\" required pattern=\"[0-9]{6}\" /> "
+    },
+    {
+      "file": "components/account-security.tsx",
+      "line": 96,
+      "control": "button",
+      "label": " Verify and enable "
+    },
+    {
+      "file": "components/account-security.tsx",
+      "line": 102,
+      "control": "input",
+      "label": " Current password setPassword(e.target.value)} autoComplete=\"current-password\" required /> "
+    },
+    {
+      "file": "components/account-security.tsx",
+      "line": 110,
+      "control": "button",
+      "label": " Set up authenticator "
+    },
+    {
+      "file": "components/account-security.tsx",
+      "line": 130,
+      "control": "input",
+      "label": " Current password setPassword(e.target.value)} required /> "
+    },
+    {
+      "file": "components/account-security.tsx",
+      "line": 140,
+      "control": "input",
+      "label": " New password setNewPassword(e.target.value)} required /> "
+    },
+    {
+      "file": "components/account-security.tsx",
+      "line": 149,
+      "control": "button",
+      "label": " Change password "
+    },
+    {
+      "file": "components/account-security.tsx",
+      "line": 153,
+      "control": "button",
+      "label": " { const r = await authClient.revokeOtherSessions(); if (r.error) setError(r.error.message || \"Could not revoke sessions\"); else setMessage(\"Other sessions revo"
+    },
+    {
+      "file": "components/automations.tsx",
+      "line": 63,
+      "control": "button",
+      "label": " openForm(\"retainer\", { status: \"PAUSED\" })} > Configure billing rule "
+    },
+    {
+      "file": "components/automations.tsx",
+      "line": 97,
+      "control": "button",
+      "label": " setPreview(!preview)} > Preview due billing "
+    },
+    {
+      "file": "components/automations.tsx",
+      "line": 104,
+      "control": "button",
+      "label": " ask(\"retainers/run\", \"Run due billing?\")} > Run / retry due billing "
+    },
+    {
+      "file": "components/automations.tsx",
+      "line": 112,
+      "control": "button",
+      "label": " go(\"retainers\")}> Manage recurring contracts ↗ "
+    },
+    {
+      "file": "components/automations.tsx",
+      "line": 156,
+      "control": "button",
+      "label": " openForm(\"retainer\", { ...r })} > Configure "
+    },
+    {
+      "file": "components/automations.tsx",
+      "line": 163,
+      "control": "button",
+      "label": " void pause(r)} > Pause "
+    },
+    {
+      "file": "components/automations.tsx",
+      "line": 193,
+      "control": "button",
+      "label": " go(\"settings\")}> View integration requirements "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 82,
+      "control": "button",
+      "label": " openTab(\"Overview\")}> 01 · RELATIONSHIP {client.status.toLowerCase()} "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 86,
+      "control": "button",
+      "label": " setProposal({ clientId: client.id })}> 02 · PROPOSAL {client.proposals?.length || 0} drafts "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 90,
+      "control": "button",
+      "label": " openTab(\"Files\")}> 03 · CONTRACT Signature not tracked "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 94,
+      "control": "button",
+      "label": " openTab(\"Invoices\")}> 04 · INVOICE {client.invoices?.length || 0} records "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 98,
+      "control": "button",
+      "label": " openTab(\"Payments\")}> 05 · PAYMENT {client.payments?.length || 0} receipts "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 107,
+      "control": "button",
+      "label": " {t.kind} · {dateLabel(t.date)} {t.label} ↗ "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 134,
+      "control": "button",
+      "label": " setProposal({ clientId: client.id })} > Prepare proposal "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 140,
+      "control": "button",
+      "label": " openTab(\"Files\")} > Upload / view contract "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 146,
+      "control": "button",
+      "label": " openForm(\"invoice\", { clientId: client.id })} > Create invoice "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 152,
+      "control": "button",
+      "label": " openForm(\"project\", { clientId: client.id })} > Start project "
+    },
+    {
+      "file": "components/client-journey.tsx",
+      "line": 158,
+      "control": "button",
+      "label": " openForm(\"note\", { clientId: client.id })} > Add relationship note "
+    },
+    {
+      "file": "components/dashboard.tsx",
+      "line": 111,
+      "control": "button",
+      "label": " onOpen(i.id)}> {i.number || \"Draft invoice\"} "
+    },
+    {
+      "file": "components/dashboard.tsx",
+      "line": 197,
+      "control": "button",
+      "label": " go(m.page)} > {m.label} {m.value} {m.hint} {m.trend && ( {m.trend} )} "
+    },
+    {
+      "file": "components/dashboard.tsx",
+      "line": 336,
+      "control": "button",
+      "label": " go(\"taxes\")}> South Carolina context {state.taxConfig ? \"Reserve assumptions are configurable. Review owner residency and tax classification with your accounta"
+    },
+    {
+      "file": "components/dashboard.tsx",
+      "line": 398,
+      "control": "button",
+      "label": " openForm(a.kind)} disabled={state.actor.role === \"ACCOUNTANT\"} > {a.label} "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 133,
+      "control": "a",
+      "label": "href={`/api/invoices/${invoice.id}/pdf`}"
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 140,
+      "control": "button",
+      "label": " window.print()}> Print "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 145,
+      "control": "button",
+      "label": " perform(`invoices/${invoice.id}/duplicate`, {})} > Duplicate "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 154,
+      "control": "button",
+      "label": " { onClose(); openForm(\"invoice\", invoice); }} > Edit draft "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 164,
+      "control": "button",
+      "label": " ask(`invoices/${invoice.id}/issue`, \"Issue this invoice?\") } > Issue invoice "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 177,
+      "control": "button",
+      "label": " ask( `invoices/${invoice.id}/send`, \"Send this invoice by email?\", ) } > Send email "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 190,
+      "control": "button",
+      "label": " openForm(\"delivery\", { invoiceId: invoice.id, recipient: invoice.client.email, status: \"SENT\", }) } > Record delivery "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 203,
+      "control": "button",
+      "label": " openForm(\"payment\", { clientId: invoice.clientId, invoiceId: invoice.id, amount: invoice.balance, }) } > Record payment "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 217,
+      "control": "button",
+      "label": " ask( `invoices/${invoice.id}/void`, \"Void this invoice?\", true, ) } > Void invoice "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 304,
+      "control": "button",
+      "label": " All clients "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 321,
+      "control": "button",
+      "label": " openForm(\"client\", client)} > Edit client "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 342,
+      "control": "button",
+      "label": " setTab(t)} > {t} "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 376,
+      "control": "a",
+      "label": "href={client.website}"
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 396,
+      "control": "button",
+      "label": " openForm(\"contact\", { clientId: id })} > Add contact "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 431,
+      "control": "button",
+      "label": " openForm(\"note\", { clientId: id })} > Add note "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 448,
+      "control": "button",
+      "label": "aria-label=\"Edit note\""
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 465,
+      "control": "button",
+      "label": " setHistory(n.revisions)} > View edit history ({n.revisions.length}) "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 491,
+      "control": "button",
+      "label": " openForm(\"invoice\", { clientId: id })} > Create invoice "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 538,
+      "control": "button",
+      "label": " openForm(\"project\", { clientId: id })} > Add project "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 554,
+      "control": "button",
+      "label": " openForm(\"project\", { ...p, clientId: id }) } > {String(p.name)} "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 587,
+      "control": "button",
+      "label": " openForm(\"retainer\", { clientId: id })} > Add retainer "
+    },
+    {
+      "file": "components/details.tsx",
+      "line": 626,
+      "control": "input",
+      "label": " {uploading ? \"Uploading…\" : \"Upload file\"} e.target.files?.[0] && void uploadFile(e.target.files[0]) } /> "
+    },
+    {
+      "file": "components/document-preview.tsx",
+      "line": 18,
+      "control": "button",
+      "label": " setOpen(true)} > {label || String(document.name)} "
+    },
+    {
+      "file": "components/document-preview.tsx",
+      "line": 93,
+      "control": "button",
+      "label": "aria-label=\"Zoom out\""
+    },
+    {
+      "file": "components/document-preview.tsx",
+      "line": 102,
+      "control": "button",
+      "label": "aria-label=\"Zoom in\""
+    },
+    {
+      "file": "components/document-preview.tsx",
+      "line": 112,
+      "control": "a",
+      "label": "href={`/api/documents/${document.id}`}"
+    },
+    {
+      "file": "components/document-preview.tsx",
+      "line": 131,
+      "control": "button",
+      "label": " setAttempt((v) => v + 1)} > Try again "
+    },
+    {
+      "file": "components/expense-review.tsx",
+      "line": 94,
+      "control": "textarea",
+      "label": "aria-label={\n                  expense.reviewRequired\n                    ? \"Review notes\"\n                    : \"Reason to reopen review\"\n                }"
+    },
+    {
+      "file": "components/expense-review.tsx",
+      "line": 157,
+      "control": "button",
+      "label": " Close "
+    },
+    {
+      "file": "components/expense-review.tsx",
+      "line": 161,
+      "control": "button",
+      "label": " {busy ? \"Saving…\" : expense.reviewRequired ? \"Mark reviewed\" : \"Reopen review\"} "
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 525,
+      "control": "select",
+      "label": "aria-label={field.label}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 553,
+      "control": "textarea",
+      "label": "aria-label={field.label}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 561,
+      "control": "input",
+      "label": "aria-label={field.label}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 666,
+      "control": "input",
+      "label": "aria-label={`Line ${index + 1} description`}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 693,
+      "control": "input",
+      "label": "aria-label={`Line ${index + 1} ${key}`}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 708,
+      "control": "button",
+      "label": "aria-label={`Remove line ${index + 1}`}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 723,
+      "control": "input",
+      "label": " Transaction jurisdiction setLines( lines.map((l, i) => i === index ? { ...l, jurisdiction: e.target.value } : l, ), ) } /> "
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 740,
+      "control": "input",
+      "label": " Service category setLines( lines.map((l, i) => i === index ? { ...l, serviceCategory: e.target.value } : l, ), ) } /> "
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 756,
+      "control": "button",
+      "label": " setLines([ ...lines, { description: \"\", quantity: \"1\", unitPrice: \"\", discountPercent: \"0\", taxPercent: \"0\", jurisdiction: \"\", serviceCategory: \"Services\", }, "
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 804,
+      "control": "select",
+      "label": "aria-label={`Invoice allocation ${index + 1}`}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 830,
+      "control": "input",
+      "label": "aria-label={`Allocation amount ${index + 1}`}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 843,
+      "control": "button",
+      "label": "aria-label=\"Remove allocation\""
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 855,
+      "control": "button",
+      "label": " setAllocations([ ...allocations, { invoiceId: \"\", amount: \"\" }, ]) } > Allocate to invoice "
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 874,
+      "control": "input",
+      "label": " setReview(e.target.checked)} /> Flag for accountant review; deductibility is not assumed "
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 894,
+      "control": "select",
+      "label": "aria-label={`Journal account ${index + 1}`}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 911,
+      "control": "input",
+      "label": "aria-label={`Debit ${index + 1}`}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 923,
+      "control": "input",
+      "label": "aria-label={`Credit ${index + 1}`}"
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 937,
+      "control": "button",
+      "label": " setJournalLines([ ...journalLines, { code: \"1000\", debit: \"0\", credit: \"0\" }, ]) } > Add journal line "
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 970,
+      "control": "button",
+      "label": " Cancel "
+    },
+    {
+      "file": "components/forms.tsx",
+      "line": 973,
+      "control": "button",
+      "label": " {busy && }{\" \"} {kind === \"invoice\" ? \"Save draft\" : initial.id ? \"Save changes\" : \"Save record\"} "
+    },
+    {
+      "file": "components/money-workspace.tsx",
+      "line": 64,
+      "control": "button",
+      "label": " go(p, f)}> {l} ↗ {currency(v)} {h} "
+    },
+    {
+      "file": "components/money-workspace.tsx",
+      "line": 76,
+      "control": "button",
+      "label": " setShowRefunds(!showRefunds)} > Refunds:{\" \"} {currency(sum(refunds.map((r) => String(r.amount))).toString())} ↗ "
+    },
+    {
+      "file": "components/money-workspace.tsx",
+      "line": 107,
+      "control": "summary",
+      "label": " How to read these numbers & connection status "
+    },
+    {
+      "file": "components/money-workspace.tsx",
+      "line": 149,
+      "control": "select",
+      "label": "aria-label=\"Reconciliation filter\""
+    },
+    {
+      "file": "components/money-workspace.tsx",
+      "line": 167,
+      "control": "button",
+      "label": " { setBusy(p.id); setError(\"\"); try { await api(`payments/${p.id}/reconcile`, { reconciled: !p.reconciled, }); await reload(); } catch (e) { setError((e as Erro"
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 56,
+      "control": "button",
+      "label": " go(\"prospecting\")}> Open Prospecting "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 96,
+      "control": "button",
+      "label": " go(m.page, m.filter)} > {m.icon} {m.label} {m.value} {m.hint} "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 120,
+      "control": "button",
+      "label": " go(\"projects\")}> View work ↗ "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 128,
+      "control": "button",
+      "label": " go(\"projects\", \"ALL\", t.projectId)} > {t.title} {t.project} · {t.ownerName || \"Unassigned\"} {dateLabel(t.dueDate)} "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 143,
+      "control": "button",
+      "label": " go(\"pipeline\", \"ALL\", o.id)}> {o.name} Opportunity follow-up · {o.ownerName || \"Unassigned\"} {dateLabel(o.followUp)} "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 165,
+      "control": "button",
+      "label": " go(\"prospecting\")}> Open workspace ↗ "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 171,
+      "control": "button",
+      "label": " go(\"prospecting\")}> {data.prospects.length} Saved prospects "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 175,
+      "control": "button",
+      "label": " go(\"prospecting\", \"QUALIFIED\")}> {data.prospects.filter((p) => p.status === \"QUALIFIED\").length} Qualified "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 181,
+      "control": "button",
+      "label": " go(\"pipeline\", \"OPEN\")}> { data.opportunities.filter( (o) => ![\"WON\", \"LOST\"].includes(o.stage), ).length } Open opportunities "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 200,
+      "control": "button",
+      "label": " go(\"invoices\", \"OUTSTANDING\")} > View outstanding ↗ "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 221,
+      "control": "button",
+      "label": " openInvoice(i.id)}> {i.client.name} {i.number} · due {dateLabel(i.dueDate)} {currency(i.balance)} "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 247,
+      "control": "button",
+      "label": " go(\"payments\", \"PERIOD\")} > View payments ↗ "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 258,
+      "control": "button",
+      "label": " go(\"payments\", \"PERIOD\")}> {p.client.name} {dateLabel(p.receivedAt)} · {p.method} {currency(p.amount)} "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 279,
+      "control": "button",
+      "label": " go(\"automations\")}> View automations ↗ "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 285,
+      "control": "button",
+      "label": " go(\"settings\")}> Communication inbox No inbound email integration. Replies needing attention are unavailable. "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 295,
+      "control": "button",
+      "label": " go(\"settings\")}> Stripe & bank sync No provider adapter. Payments can be recorded manually. "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 304,
+      "control": "button",
+      "label": " go(\"automations\")}> {state.actor.role !== \"OWNER\" ? \"Run history requires owner access\" : failures.length ? `${failures.length} failed runs in recent history` "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 326,
+      "control": "button",
+      "label": " View activity ↗ "
+    },
+    {
+      "file": "components/overview.tsx",
+      "line": 333,
+      "control": "button",
+      "label": " {a.summary} {a.entityType.toLowerCase()} · {dateLabel(a.createdAt)} "
+    },
+    {
+      "file": "components/pdf-preview.tsx",
+      "line": 116,
+      "control": "button",
+      "label": "aria-label=\"Previous page\""
+    },
+    {
+      "file": "components/pdf-preview.tsx",
+      "line": 128,
+      "control": "button",
+      "label": "aria-label=\"Next page\""
+    },
+    {
+      "file": "components/pdf-preview.tsx",
+      "line": 137,
+      "control": "button",
+      "label": "aria-label=\"Zoom out\""
+    },
+    {
+      "file": "components/pdf-preview.tsx",
+      "line": 147,
+      "control": "button",
+      "label": "aria-label=\"Zoom in\""
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 124,
+      "control": "button",
+      "label": " setCreate(true)}> Add opportunity "
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 132,
+      "control": "input",
+      "label": "aria-label=\"Search opportunities\""
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 138,
+      "control": "select",
+      "label": "aria-label=\"Filter stage\""
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 152,
+      "control": "input",
+      "label": "aria-label=\"Filter owner\""
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 158,
+      "control": "select",
+      "label": "aria-label=\"Sort opportunities\""
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 168,
+      "control": "button",
+      "label": "aria-label=\"Table view\""
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 176,
+      "control": "button",
+      "label": "aria-label=\"Kanban view\""
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 204,
+      "control": "button",
+      "label": " open(o.id)}> {o.name} "
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 229,
+      "control": "button",
+      "label": " open(o.id)} > {o.name} {currency(o.value)} {o.ownerName || \"Unassigned\"} · {dateLabel(o.followUp)} "
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 247,
+      "control": "summary",
+      "label": " What do the stages mean? "
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 304,
+      "control": "a",
+      "label": "href={`/?module=prospecting&record=${encodeURIComponent(opp.prospect.id)}`}"
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 316,
+      "control": "button",
+      "label": " openClient(opp.clientId!)} > {state.clients.find((c) => c.id === opp.clientId)?.name || \"Open client\"} "
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 335,
+      "control": "a",
+      "label": "href={opp.prospect.sourceUrl}"
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 351,
+      "control": "button",
+      "label": " { setStageDraft(undefined); setEdit(true); }} > Change stage / follow-up "
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 362,
+      "control": "button",
+      "label": " { setStageDraft(\"WON\"); setEdit(true); }} > Mark won "
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 371,
+      "control": "button",
+      "label": " { setStageDraft(\"LOST\"); setEdit(true); }} > Mark lost "
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 383,
+      "control": "button",
+      "label": " createClient( { name: opp.name, email: opp.prospect?.email || \"\", website: opp.prospect?.website || \"\", phone: opp.prospect?.phone || \"\", }, opp.id, ) } > Crea"
+    },
+    {
+      "file": "components/pipeline.tsx",
+      "line": 407,
+      "control": "button",
+      "label": " setNote(!note)}> Add note "
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 76,
+      "control": "button",
+      "label": " openForm(\"project\")}> Add project "
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 84,
+      "control": "input",
+      "label": "aria-label=\"Search projects\""
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 90,
+      "control": "select",
+      "label": "aria-label=\"Project status\""
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 111,
+      "control": "button",
+      "label": " { setId(p.id); setAdding(false); }} > {p.name} "
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 125,
+      "control": "button",
+      "label": " openClient(p.clientId)} > {p.client.name} "
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 160,
+      "control": "button",
+      "label": " openClient(project.clientId)} > {project.client.name} "
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 173,
+      "control": "button",
+      "label": " openForm(\"project\", { ...project })} > Edit project / status "
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 186,
+      "control": "input",
+      "label": " void toggle(t)} /> {t.title} {t.ownerName || \"Unassigned\"} · {dateLabel(t.dueDate)} "
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 206,
+      "control": "button",
+      "label": " setAdding(!adding)}> Add task "
+    },
+    {
+      "file": "components/projects.tsx",
+      "line": 237,
+      "control": "button",
+      "label": " openClient(project.clientId)} > Open client records "
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 115,
+      "control": "button",
+      "label": " setCreate(true)}> Add prospect "
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 131,
+      "control": "button",
+      "label": " go(\"settings\")} > View integrations "
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 142,
+      "control": "input",
+      "label": "placeholder=\"Business, email, or evidence\""
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 150,
+      "control": "input",
+      "label": "placeholder=\"All industries\""
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 158,
+      "control": "input",
+      "label": "placeholder=\"All locations\""
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 164,
+      "control": "button",
+      "label": " setSaveSearch(true)} > Save search "
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 174,
+      "control": "select",
+      "label": "aria-label=\"Prospect status\""
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 184,
+      "control": "select",
+      "label": "aria-label=\"Sort prospects\""
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 192,
+      "control": "select",
+      "label": "aria-label=\"Saved searches\""
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 217,
+      "control": "button",
+      "label": " { if ( window.confirm( \"Dismiss selected prospects? Records and evidence will be retained.\", ) ) void act(async () => { for (const p of data.prospects.filter(("
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 241,
+      "control": "button",
+      "label": " setSelected([])}> Clear selection "
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 260,
+      "control": "input",
+      "label": "aria-label={`Select ${p.name}`}"
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 274,
+      "control": "button",
+      "label": " { setId(p.id); setEdit(false); }} > {p.name} "
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 402,
+      "control": "a",
+      "label": "href={prospect.website}"
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 412,
+      "control": "a",
+      "label": "href={prospect.sourceUrl}"
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 440,
+      "control": "button",
+      "label": " setEdit(true)} > Edit / qualify prospect "
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 447,
+      "control": "button",
+      "label": " go(\"pipeline\")}> Open pipeline "
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 451,
+      "control": "button",
+      "label": " void act( () => api(`prospects/${prospect.id}/convert`, {}), \"Opportunity created. Open Pipeline to set the next follow-up.\", ) } > Add to pipeline "
+    },
+    {
+      "file": "components/rich-text.tsx",
+      "line": 28,
+      "control": "button",
+      "label": "aria-label={label}"
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 69,
+      "control": "button",
+      "label": " setTab(t)} key={t} > {t} "
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 108,
+      "control": "textarea",
+      "label": " setValues({ ...values, [key]: e.target.value }) } />"
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 116,
+      "control": "input",
+      "label": " setValues({ ...values, [key]: e.target.value }) } />"
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 131,
+      "control": "button",
+      "label": " {saving ? \"Saving…\" : \"Save organization\"} "
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 143,
+      "control": "button",
+      "label": " openForm(\"user\")}> Add staff "
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 156,
+      "control": "select",
+      "label": "aria-label={`Role for ${m.user.name}`}"
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 181,
+      "control": "button",
+      "label": " perform(\"users/\" + m.user.id, { role: m.role, active: !m.active, }) } > {m.active ? \"Disable\" : \"Enable\"} "
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 210,
+      "control": "button",
+      "label": " openForm(\"owner\")}> Add owner "
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 224,
+      "control": "button",
+      "label": " openForm(\"owner\", o)} > Edit "
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 240,
+      "control": "button",
+      "label": " openForm(\"owner-transaction\")} > Record owner transaction "
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 324,
+      "control": "button",
+      "label": " openForm(\"payment\")} > Record external payment "
+    },
+    {
+      "file": "components/settings.tsx",
+      "line": 385,
+      "control": "button",
+      "label": " perform(\"sessions/\" + s.id, {})} > Revoke "
+    },
+    {
+      "file": "components/ui.tsx",
+      "line": 88,
+      "control": "button",
+      "label": " {action} "
+    },
+    {
+      "file": "components/ui.tsx",
+      "line": 141,
+      "control": "Dialog.Close",
+      "label": "aria-label=\"Close dialog\""
+    },
+    {
+      "file": "components/ui.tsx",
+      "line": 188,
+      "control": "button",
+      "label": " View all "
+    },
+    {
+      "file": "components/workflow-ui.tsx",
+      "line": 47,
+      "control": "Dialog.Close",
+      "label": "aria-label=\"Close details\""
+    },
+    {
+      "file": "components/workflow-ui.tsx",
+      "line": 126,
+      "control": "select",
+      "label": "aria-label={f.label}"
+    },
+    {
+      "file": "components/workflow-ui.tsx",
+      "line": 142,
+      "control": "textarea",
+      "label": "aria-label={f.label}"
+    },
+    {
+      "file": "components/workflow-ui.tsx",
+      "line": 153,
+      "control": "input",
+      "label": "aria-label={f.label}"
+    },
+    {
+      "file": "components/workflow-ui.tsx",
+      "line": 175,
+      "control": "button",
+      "label": " {busy ? \"Saving…\" : submit} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 402,
+      "control": "input",
+      "label": "aria-label=\"Filter records\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 410,
+      "control": "select",
+      "label": "aria-label=\"Filter status\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 430,
+      "control": "button",
+      "label": "aria-label=\"Close navigation\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 442,
+      "control": "button",
+      "label": " go(id)} > {label} {id === \"invoices\" && !!state?.unpaidCount && ( {state.unpaidCount} )} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 475,
+      "control": "button",
+      "label": "aria-label=\"Open navigation\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 484,
+      "control": "input",
+      "label": "aria-label=\"Search workspace\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 496,
+      "control": "button",
+      "label": " { go(r.module, \"ALL\", r.id); if (r.module === \"clients\") setDetail(r.id); else if (r.module === \"invoices\") setInvoiceId(r.id); else setFocusRecord(r.id); setQ"
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 518,
+      "control": "button",
+      "label": " setQuickCreate(true)} > Quick create "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 527,
+      "control": "button",
+      "label": "aria-label=\"Notifications\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 544,
+      "control": "button",
+      "label": " { void perform(\"notifications/\" + n.id, {}); go(n.target); setNotifications(false); }} > {!n.reads.length && } {n.title} {n.message} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 568,
+      "control": "button",
+      "label": "aria-label=\"Account menu\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 598,
+      "control": "button",
+      "label": " { setSecurity(true); setAccount(false); }} > Account security "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 607,
+      "control": "button",
+      "label": " { await authClient.signOut(); location.assign(\"/login\"); }} > Sign out "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 648,
+      "control": "select",
+      "label": "aria-label=\"Reporting period\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 665,
+      "control": "button",
+      "label": " openForm(primary[page].kind)} > {primary[page].label} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 680,
+      "control": "button",
+      "label": " { setError(\"\"); void reload(); }} > Retry "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 689,
+      "control": "button",
+      "label": "aria-label=\"Dismiss error\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 709,
+      "control": "button",
+      "label": " setSecurity(true)} > Open account security "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 723,
+      "control": "button",
+      "label": " go(p)} > {p === \"taxes\" ? \"Tax planning\" : p[0].toUpperCase() + p.slice(1)} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 858,
+      "control": "button",
+      "label": " setDetail(c.id)} > {c.name.slice(0, 2).toUpperCase()} {c.name} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 878,
+      "control": "button",
+      "label": "aria-label={`Open ${c.name}`}"
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 945,
+      "control": "select",
+      "label": " setStatusFilter(e.target.value)} > All dates Selected reporting period "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1000,
+      "control": "button",
+      "label": " perform(`payments/${p.id}/reconcile`, { reconciled: !p.reconciled, }) } > {p.reconciled ? \"Reconciled ✓\" : \"Mark reconciled\"} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1021,
+      "control": "button",
+      "label": " openForm(\"allocation\", { paymentId: p.id, clientId: p.clientId, }) } > Allocate "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1034,
+      "control": "button",
+      "label": " openForm(\"refund\", { paymentId: p.id }) } > Refund "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1116,
+      "control": "input",
+      "label": " Upload event.target.files?.[0] && void uploadReceipt( e.id, event.target.files[0], ) } /> "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1134,
+      "control": "button",
+      "label": " setExpenseId(e.id)} > {e.reviewRequired && owner && !e.reversedAt ? \"Review\" : \"Review details\"} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1143,
+      "control": "button",
+      "label": " ask( `expenses/${e.id}/reverse`, \"Reverse this expense?\", true, ) } > Reverse "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1206,
+      "control": "button",
+      "label": " ask( \"retainers/run\", \"Generate due recurring invoices?\", ) } > Run billing "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1257,
+      "control": "button",
+      "label": " openForm(\"retainer\", r)} > Manage "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1263,
+      "control": "button",
+      "label": " openForm(\"time\", { retainerId: r.id }) } > Log time "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1431,
+      "control": "button",
+      "label": " openForm(\"tax-payment\")} > Record tax payment "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1471,
+      "control": "a",
+      "label": "href=\"https://www.irs.gov/businesses/small-businesses-self-employed/limited-liability-company-llc\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1478,
+      "control": "a",
+      "label": "href=\"https://dor.sc.gov\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1486,
+      "control": "a",
+      "label": "href={exportUrl(\"ledger\")}"
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1525,
+      "control": "select",
+      "label": "aria-label=\"Report type\""
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1549,
+      "control": "a",
+      "label": "href={exportUrl(reportType)}"
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1556,
+      "control": "a",
+      "label": "href={exportUrl(reportType, \"pdf\")}"
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1564,
+      "control": "button",
+      "label": " openForm(\"journal\")} > Reviewed adjustment "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1919,
+      "control": "button",
+      "label": " { setQuickCreate(false); openForm(kind); }} > {label} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1931,
+      "control": "button",
+      "label": " go(\"prospecting\")} > Add prospect → "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 1937,
+      "control": "button",
+      "label": " go(\"pipeline\")}> Add opportunity → "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 2035,
+      "control": "textarea",
+      "label": " Reason setReason(e.target.value)} minLength={5} required /> "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 2044,
+      "control": "input",
+      "label": " Correction date setCorrectionDate(e.target.value)} /> "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 2062,
+      "control": "button",
+      "label": " setConfirmation(null)} > Cancel "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 2068,
+      "control": "button",
+      "label": " {confirmBusy ? \"Processing…\" : \"Confirm\"} "
+    },
+    {
+      "file": "components/workspace.tsx",
+      "line": 2090,
+      "control": "button",
+      "label": "aria-label=\"Dismiss notification\""
+    }
+  ]
+}
