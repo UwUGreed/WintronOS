@@ -1,12 +1,24 @@
 import { test, expect, type Page } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 async function login(page: Page) {
-  const stored = JSON.parse(
-    readFileSync(".data/e2e-owner-session.json", "utf8"),
-  );
-  await page.context().addCookies(stored.cookies);
-  await page.goto("/");
+  if (existsSync(".data/e2e-owner-session.json")) {
+    const stored = JSON.parse(
+      readFileSync(".data/e2e-owner-session.json", "utf8"),
+    );
+    await page.context().addCookies(stored.cookies);
+    await page.goto("/");
+  } else {
+    const credentials = JSON.parse(
+      readFileSync(".data/e2e-credentials.json", "utf8"),
+    );
+    await page.goto("/login");
+    await page.getByLabel("Email address").fill(credentials.email);
+    await page
+      .getByLabel("Password", { exact: true })
+      .fill(credentials.password);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  }
   await expect(page.getByRole("heading", { name: /Good/ })).toBeVisible();
 }
 const headers = { origin: "http://localhost:43817" };
@@ -21,7 +33,7 @@ test("prospect research, saved filters, qualification, duplicate detection and p
     .getByRole("button", { name: "Prospecting", exact: true })
     .click();
   await expect(
-    page.getByText("External lead search needs a provider"),
+    page.getByRole("heading", { name: "Discover businesses", exact: true }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Add prospect", exact: true })
@@ -616,4 +628,283 @@ test("partially paid overdue invoices reconcile to the summary and duplicate cli
   expect(
     (await (await page.request.get("/api/state")).json()).invoices.length,
   ).toBe(before + 1);
+});
+
+test("integration status shows setup needs, development labels, and protected diagnostics", async ({
+  page,
+  browser,
+}) => {
+  const anonymous = await browser.newContext({
+    baseURL: "http://localhost:43817",
+  });
+  expect((await anonymous.request.get("/api/integrations/smtp")).status()).toBe(
+    401,
+  );
+  expect(
+    (await anonymous.request.get("/api/integrations/leads")).status(),
+  ).toBe(401);
+  await anonymous.close();
+  await login(page);
+  await page.goto("/?module=prospecting");
+  await expect(
+    page.getByText("Under development", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "View integration setup" }).click();
+  await expect(
+    page.getByRole("tab", { name: "Integrations", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  const smtp = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "Invoice email", exact: true }),
+  });
+  await expect(smtp.getByText("Setup required", { exact: true })).toBeVisible();
+  await expect(
+    smtp.getByRole("button", { name: "Check connection", exact: true }),
+  ).toBeDisabled();
+  await expect(page.locator(".integration-under_development")).toHaveCount(6);
+  await expect(
+    page.getByText("Adding credentials will not enable them.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  const status = await (
+    await page.request.get("/api/integrations/smtp")
+  ).json();
+  expect(status.state).toBe("SETUP_REQUIRED");
+  expect(status).not.toHaveProperty("pass");
+  expect(status).not.toHaveProperty("configHash");
+  expect(
+    (
+      await page.request.post("/api/integrations/smtp/check", {
+        headers,
+        data: {},
+      })
+    ).status(),
+  ).toBe(409);
+  expect(
+    (
+      await page.request.post("/api/integrations/smtp/check", {
+        headers: { origin: "https://untrusted.invalid" },
+        data: {},
+      })
+    ).status(),
+  ).toBe(403);
+  for (const width of [1448, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: `.data/integrations-${width}.png`,
+      fullPage: true,
+      animations: "disabled",
+    });
+  }
+});
+
+test("SMTP diagnostics UI handles provider failures and retry without claiming delivery", async ({
+  page,
+}) => {
+  await login(page);
+  let current = {
+    state: "VERIFICATION_REQUIRED",
+    configured: true,
+    issues: [],
+    checkedAt: null as string | null,
+    detail:
+      "Configuration is present. Check the connection before sending an invoice.",
+    lastAcceptedAt: null,
+  };
+  let attempts = 0;
+  await page.route("**/api/integrations/smtp", (route) =>
+    route.fulfill({ json: current }),
+  );
+  await page.route("**/api/integrations/smtp/check", async (route) => {
+    attempts++;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    current = {
+      ...current,
+      state: attempts === 1 ? "ERROR" : "CONNECTION_VERIFIED",
+      checkedAt: new Date().toISOString(),
+      detail:
+        attempts === 1
+          ? "Connection check failed. Review the SMTP host, port, TLS settings, and credentials, then retry."
+          : "SMTP connection, TLS, and configured authentication verified. No email sent; recipient delivery is not verified.",
+    };
+    await route.fulfill({ json: current });
+  });
+  await page.goto("/?module=settings&section=integrations");
+  await expect(
+    page.getByText("Needs verification", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Check connection", exact: true })
+    .dblclick();
+  await expect(
+    page.getByText("Connection failed", { exact: true }),
+  ).toBeVisible();
+  expect(attempts).toBe(1);
+  await page
+    .getByRole("button", { name: "Check connection", exact: true })
+    .click();
+  await expect(
+    page.getByText("Connection verified", { exact: true }),
+  ).toBeVisible();
+  expect(attempts).toBe(2);
+  await expect(
+    page.getByText("No successful send recorded", { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByText("Connection verified", { exact: true }),
+  ).toBeVisible();
+});
+
+test("lead discovery previews sources, handles failures, and saves only reviewed prospects", async ({
+  page,
+}) => {
+  await login(page);
+  await page.route("**/api/workspace", async (route) => {
+    const response = await route.fetch();
+    const json = await response.json();
+    json.integrations.leadProvider = true;
+    await route.fulfill({ response, json });
+  });
+  const suffix = randomUUID();
+  const sourceUrl = `https://discovery-${suffix}.example.invalid/about`;
+  let calls = 0;
+  await page.route("**/api/integrations/leads/search", async (route) => {
+    calls++;
+    const input = route.request().postDataJSON();
+    expect(input.query).toBe("independent dentists");
+    expect(input.location).toBe("Charleston");
+    if (calls === 1) {
+      await route.fulfill({
+        status: 502,
+        json: { error: "Brave Search is unavailable. Try again later." },
+      });
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    await route.fulfill({
+      json: {
+        query: "independent dentists Charleston",
+        page: input.page,
+        more: input.page === 0,
+        searchedAt: new Date().toISOString(),
+        remainingToday: 100 - calls,
+        results:
+          input.page === 0
+            ? [
+                {
+                  title: "Fictional search result title",
+                  url: sourceUrl,
+                  description:
+                    "Unverified provider excerpt about dental services.",
+                  existingProspectId: null,
+                },
+              ]
+            : [],
+      },
+    });
+  });
+  await page.goto("/?module=prospecting");
+  await page
+    .getByLabel("Search terms", { exact: true })
+    .fill("independent dentists");
+  await page.getByLabel("Search location", { exact: true }).fill("Charleston");
+  await page
+    .getByRole("button", { name: "Search businesses", exact: true })
+    .click();
+  await expect(page.getByRole("main").getByRole("alert")).toContainText(
+    "Brave Search is unavailable",
+  );
+  await expect(page.getByLabel("Search terms", { exact: true })).toHaveValue(
+    "independent dentists",
+  );
+  await page
+    .getByRole("button", { name: "Search businesses", exact: true })
+    .dblclick();
+  await expect(
+    page.getByRole("heading", { name: "Fictional search result title" }),
+  ).toBeVisible();
+  expect(calls).toBe(2);
+  await expect(
+    page.getByText("Search excerpt · not verified business facts", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: ".data/lead-discovery-results.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page
+    .getByRole("button", { name: "Review & save prospect", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog", {
+    name: "Review discovered business",
+    exact: true,
+  });
+  await expect(dialog.getByLabel("Source URL", { exact: true })).toHaveValue(
+    sourceUrl,
+  );
+  await expect(dialog.getByLabel("Website", { exact: true })).toHaveValue("");
+  await expect(dialog.getByLabel("Sourced facts", { exact: true })).toHaveValue(
+    "",
+  );
+  await expect(
+    dialog.getByLabel("Qualification reasoning", { exact: true }),
+  ).toHaveValue("");
+  await expect(dialog.getByLabel("Email", { exact: true })).toHaveValue("");
+  await expect(
+    dialog.getByLabel("Source checked on", { exact: true }),
+  ).toHaveValue("");
+  const name = "Fictional reviewed business " + suffix;
+  await dialog.getByLabel("Business name", { exact: true }).fill(name);
+  await dialog.getByLabel("Website", { exact: true }).fill(sourceUrl);
+  await dialog
+    .getByLabel("Sourced facts", { exact: true })
+    .fill("Fictional observed fact recorded by the reviewer.");
+  await dialog
+    .getByLabel("Source checked on", { exact: true })
+    .fill("2026-11-12");
+  await dialog
+    .getByRole("button", { name: "Save prospect", exact: true })
+    .click();
+  await expect(dialog).toBeHidden();
+  await page
+    .getByRole("button", { name: "Open saved prospect", exact: true })
+    .click();
+  const details = page.getByRole("dialog", { name, exact: true });
+  await expect(
+    details.getByText("Fictional observed fact recorded by the reviewer.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    details.getByRole("button", { name: "Add to pipeline", exact: true }),
+  ).toBeDisabled();
+  await details
+    .getByRole("button", { name: "Close details", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Next results", exact: true }).click();
+  await expect(
+    page.getByText("No matching sources", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Next results", exact: true }),
+  ).toBeDisabled();
+  const workspace = await (await page.request.get("/api/workspace")).json();
+  const saved = workspace.prospects.filter(
+    (p: { name: string }) => p.name === name,
+  );
+  expect(saved).toHaveLength(1);
+  expect(saved[0].evidence).toBe(
+    "Fictional observed fact recorded by the reviewer.",
+  );
+  expect(saved[0].status).toBe("SAVED");
+  expect(saved[0].qualification).toBe("");
+  expect(saved[0].email).toBe("");
 });

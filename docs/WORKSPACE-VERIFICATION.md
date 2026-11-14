@@ -65,7 +65,7 @@ Final results are recorded below. This is targeted regression coverage, not a cl
 
 ## External dependencies and honest limits
 
-- External prospect discovery/enrichment has **no provider adapter** in this installation. A provider implementation, credentials and source-attribution handling are required. Adding a key alone does not enable it. Local saved-prospect searches work.
+- External business discovery now has a Brave Search adapter; it requires `BRAVE_SEARCH_API_KEY`. Source previews must be reviewed before saving a prospect, and excerpts are not automatically recorded as verified facts. Automatic contact enrichment remains **Under development**. Local saved-prospect filters work without a provider.
 - Stripe/bank import and webhook adapters do not exist. No successful sync is claimed. Provider fees/payouts are not separately modeled or counted as sales. Manual payment recording and reconciliation work.
 - Inbound email, reply events, outbound sequences and reply-triggered rules are not implemented. SMTP only sends invoice documents. This checkout has neither `SMTP_HOST` nor `SMTP_FROM` configured. Invoice Send email is disabled while these are absent; setup instructions remain visible.
 - Proposals are internal drafts. Delivery/acceptance, electronic signature verification and a contract signing provider are not connected. Existing uploaded proposal/contract files remain viewable/downloadable.
@@ -85,7 +85,7 @@ No new external credentials are required for manual prospecting, pipeline, propo
 
 Only public reference pages were inspected: [Linear](https://linear.app/), [HoneyBook](https://www.honeybook.com/), and [Stripe Payments](https://stripe.com/payments). No authenticated third-party dashboards were accessed.
 
-## Final validation — November 12, 2026
+## Initial redesign validation — November 12, 2026
 
 | Check | Result |
 | --- | --- |
@@ -100,7 +100,7 @@ Only public reference pages were inspected: [Linear](https://linear.app/), [Hone
 | Console/network monitoring | No browser exceptions or failed API responses in the route/responsive sweep; deliberately injected failure cases passed recovery checks |
 | Dedicated lint command | None configured in this repository; no ESLint result is claimed |
 
-The build and migration changes are ready in the checkout for review and rollout. All new workflow behavior was tested using fictional data. Live lead discovery, Stripe/bank synchronization, inbound email/reply automation, electronic signatures, SMTP delivery, OS printing, and authenticated production workflows remain outside the verified paths for the reasons above. Legacy administrative and financial controls have targeted coverage rather than an exhaustive claim about every possible state.
+The initial build and migration were subsequently deployed as recorded below. All new workflow behavior was tested using fictional data. Live lead discovery, Stripe/bank synchronization, inbound email/reply automation, electronic signatures, SMTP delivery, OS printing, and authenticated production workflows remain outside the verified paths for the reasons above. Legacy administrative and financial controls have targeted coverage rather than an exhaustive claim about every possible state.
 
 Local raw verification artifacts are `.data/workspace-build.log`, `.data/workspace-typecheck.log`, `.data/workspace-tests.log`, `.data/workspace-e2e.log`, and `.data/workspace-format.log`. The Playwright report is in `playwright-report/index.html`; ignored artifacts may contain fictional test-account data and should not be published wholesale.
 
@@ -116,3 +116,24 @@ Deployed to **https://wintron-os.tail70d8db.ts.net** after the user reported tha
 - Full authenticated browser workflows remain verified against the isolated test database. No production test account, outreach, charge, or refund was introduced during rollout.
 
 Recovery snapshot: `.data/rollout-20261112T192324Z/`. This protected local snapshot does not replace an offsite backup configuration. Deployment logs and live verification results are in ignored `.data/workspace-deploy*.log` and `.data/workspace-live-verification.json`.
+
+
+## Integration status and lead discovery follow-up — November 14, 2026
+
+Unimplemented contact enrichment, inbox, outreach, Stripe, bank, and signature integrations now carry explicit **Under development** labels throughout the workspace. Brave Search business discovery is implemented with source preview, pagination, manual review, and duplicate-aware prospect saving; it shows **Setup required** while the API key is absent. Invoice email has owner-only connection diagnostics, sanitized persisted check results, configuration validation, and separate evidence for actual SMTP acceptance. See [INTEGRATIONS.md](INTEGRATIONS.md) for setup, behavior, endpoints, and test coverage. The static control inventory was regenerated. No new database migration is needed.
+
+
+Follow-up validation:
+
+- Production build, TypeScript, formatting, and diff checks passed.
+- 57 service/unit tests passed across six files, including the Brave adapter with controlled responses and invoice delivery through a local TLS SMTP fixture.
+- The final full browser run passed the 12 existing regression cases before its process was interrupted. All three integration cases then passed in a separate targeted run: status/access/setup labels, SMTP failure/retry, and provider search → source review → persisted prospect.
+- The static inventory now contains 244 control sites across 24 components. Desktop/mobile integration screenshots and a fictional lead-search preview are in `docs/screenshots/workspace/`.
+- Live provider credentials remain absent. No real Brave request, outbound customer email, charge, or processor refund was made during verification. Provider-backed searches show **Setup required** until the server key is configured.
+
+Verification logs: `.data/integrations-build.log`, `.data/integrations-tests.log`, `.data/integrations-e2e.log`, `.data/integrations-final-browser.log`, and `.data/integrations-docker-build.log`. Browser-provider fixtures prove application behavior; they do not establish successful authentication to a live Brave account.
+
+
+Follow-up deployed on November 14, 2026 to `https://wintron-os.tail70d8db.ts.net`, build `SESsxfCVIVgSfwew5lE3M`. A fresh local recovery snapshot at `.data/rollout-20261114T184219Z/` was restored in an isolated PostgreSQL container and verified against existing record counts, document checksums, and financial totals. No schema change was required. The first attempt safely rolled back when the restore check connected during PostgreSQL's temporary bootstrap-server transition; the retry waited for the permanent server and succeeded.
+
+Live checks passed: HTTPS login 200, health `ok`, new integration and lead-search CSS served, matching branding asset, and unauthenticated workspace/SMTP/lead-status endpoints returning 401. No browser exceptions were observed on the public login check. Authenticated workflows were tested against the isolated database, not by creating production test accounts. Raw deployment and live-check logs are `.data/integrations-deploy.log` and `.data/integrations-live-verification.json`.

@@ -1,4 +1,5 @@
 "use client";
+import { IntegrationStatus } from "./integration-status";
 import { useState } from "react";
 import { Card, Badge, Modal, dateLabel, currency } from "./ui";
 import { EditFields } from "./workflow-ui";
@@ -163,10 +164,14 @@ export function ClientJourney({
               </button>
             </div>
           )}
-          <p className="muted small-text">
-            Email conversations, proposal acceptance, and electronic signatures
-            are not connected.
-          </p>
+          <div className="integration-inline">
+            <IntegrationStatus state="UNDER_DEVELOPMENT" />
+            <p className="muted small-text">
+              Email conversations, proposal delivery and acceptance, and
+              electronic signatures are under development. Proposals saved here
+              are internal drafts.
+            </p>
+          </div>
           {client.documents?.map((d) => (
             <div className="timeline-note" key={d.id}>
               <DocumentLink document={d} label={String(d.name)} />

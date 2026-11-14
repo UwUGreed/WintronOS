@@ -5,13 +5,13 @@ import {
   Users,
   ShieldCheck,
   Server,
-  Mail,
   FileClock,
   Plus,
   Check,
   LogOut,
 } from "lucide-react";
 import { Card, Table, Badge, api, dateLabel, Empty } from "./ui";
+import { Integrations } from "./integrations";
 import { AccountSecurity } from "./account-security";
 import type { Settings, State, Row } from "@/lib/client-types";
 import type { FormKind } from "./forms";
@@ -262,74 +262,7 @@ export function SettingsPanel({
           </Card>
         </div>
       )}
-      {tab === "Integrations" && (
-        <div className="two-columns">
-          <Card title="Invoice email" icon={<Mail size={20} />}>
-            <Badge
-              value={settings?.smtpConfigured ? "CONFIGURED" : "NOT_CONFIGURED"}
-            />
-            <p>SMTP is configured through server environment variables.</p>
-            <dl className="detail-list">
-              <dt>Host and port</dt>
-              <dd>SMTP_HOST · SMTP_PORT</dd>
-              <dt>Sender</dt>
-              <dd>SMTP_FROM</dd>
-              <dt>Credentials</dt>
-              <dd>SMTP_USER · SMTP_PASSWORD</dd>
-              <dt>Transport</dt>
-              <dd>TLS required</dd>
-            </dl>
-            <p className="muted">
-              Secrets are never returned to the browser. Downloadable invoice
-              PDFs work without email configuration.
-            </p>
-          </Card>
-          <Card title="Lead discovery">
-            <Badge value="NOT_CONNECTED" />
-            <p>No lead-search provider is implemented.</p>
-            <p className="muted">
-              An administrator must implement a search provider adapter with
-              source attribution, then configure its credentials on the server.
-              Adding a key alone will not enable search. Manual prospect
-              research and saved searches work now.
-            </p>
-            <p className="muted">Last successful search: never.</p>
-          </Card>
-          <Card title="Communication inbox">
-            <Badge value="NOT_CONNECTED" />
-            <p>Inbound email and reply events are unavailable.</p>
-            <p className="muted">
-              Connect an inbox provider and implement event handling before
-              enabling reply-based rules. SMTP only sends invoice emails; it
-              does not read replies.
-            </p>
-            <p className="muted">Last successful sync: never.</p>
-          </Card>
-          <Card title="Payments & bank accounts">
-            <Badge value="NOT_CONNECTED" />
-            <p className="muted">
-              Stripe and bank adapters are not implemented. An administrator
-              must add an adapter with verified webhook handling and duplicate
-              detection before configuring credentials. Last successful sync:
-              never.
-            </p>
-            <p>
-              Record payments received through your existing bank or payment
-              processor.
-            </p>
-            <p className="muted">
-              External payment processing and bank synchronization are not
-              enabled. No card credentials are stored.
-            </p>
-            <button
-              className="button secondary"
-              onClick={() => openForm("payment")}
-            >
-              Record external payment
-            </button>
-          </Card>
-        </div>
-      )}
+      {tab === "Integrations" && <Integrations />}
       {tab === "System & audit" && (
         <div className="stack">
           <div className="metrics three">

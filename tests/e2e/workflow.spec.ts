@@ -172,6 +172,26 @@ test("read-only role and origin protections are enforced by the server", async (
   page,
 }) => {
   await login(page, credentials().accountantEmail);
+  expect((await page.request.get("/api/integrations/leads")).status()).toBe(
+    200,
+  );
+  expect(
+    (
+      await page.request.post("/api/integrations/leads/search", {
+        headers: { origin: "http://localhost:43817" },
+        data: { query: "dentists" },
+      })
+    ).status(),
+  ).toBe(403);
+  expect((await page.request.get("/api/integrations/smtp")).status()).toBe(403);
+  expect(
+    (
+      await page.request.post("/api/integrations/smtp/check", {
+        headers: { origin: "http://localhost:43817" },
+        data: {},
+      })
+    ).status(),
+  ).toBe(403);
   const denied = await page.request.post("/api/clients", {
     headers: { origin: "http://localhost:43817" },
     data: { name: "Unauthorized" },

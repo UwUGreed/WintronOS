@@ -124,9 +124,9 @@ export function InvoiceDetail({
         )}
         {!state.smtpConfigured && invoice.status === "ISSUED" && (
           <p className="notice">
-            Email delivery is unavailable. Configure SMTP in Settings →
-            Integrations, or download the PDF and record delivery after sending
-            it yourself.
+            Invoice email: Setup required. Configure and check SMTP in Settings
+            → Integrations, or download the PDF and record delivery after
+            sending it yourself.
           </p>
         )}
         <div className="button-row">

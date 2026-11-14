@@ -11,6 +11,12 @@ const child = spawn("node", [".next/standalone/server.js"], {
     HOSTNAME: "127.0.0.1",
     PORT: "43817",
     REQUIRE_MFA: "false",
+    // Browser tests must never inherit a production email provider.
+    BRAVE_SEARCH_API_KEY: "",
+    SMTP_HOST: "",
+    SMTP_FROM: "",
+    SMTP_USER: "",
+    SMTP_PASSWORD: "",
     DOCUMENT_STORAGE_PATH: process.cwd() + "/.data/test-documents",
   },
 });

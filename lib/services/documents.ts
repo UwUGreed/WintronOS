@@ -4,7 +4,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { mkdir, writeFile, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
-import nodemailer from "nodemailer";
+import { createSmtpTransport, smtpConfiguration } from "../smtp";
 import { db } from "../db";
 import { AppError, authorize, type Actor } from "../security";
 import { transaction, audit, clientInOrg } from "./ledger";
@@ -116,9 +116,10 @@ export async function sendInvoice(a: Actor, id: string) {
   });
   if (!invoice || invoice.status !== "ISSUED")
     throw new AppError("Only issued invoices can be sent.");
-  if (!process.env.SMTP_HOST || !process.env.SMTP_FROM)
+  const config = smtpConfiguration();
+  if (!config.configured)
     throw new AppError(
-      "Configure SMTP_HOST and SMTP_FROM on the server. PDF download is available.",
+      "Invoice email setup required. Check Settings → Integrations. PDF download is available.",
       409,
     );
   if (!invoice.client.email)
@@ -133,19 +134,9 @@ export async function sendInvoice(a: Actor, id: string) {
     },
   });
   try {
-    const transport = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === "true",
-      requireTLS: process.env.SMTP_SECURE !== "true",
-      auth: process.env.SMTP_USER
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
-        : undefined,
-      connectionTimeout: 10000,
-      socketTimeout: 20000,
-    });
+    const transport = createSmtpTransport(config);
     await transport.sendMail({
-      from: process.env.SMTP_FROM,
+      from: config.from,
       to: invoice.client.email,
       subject: `Invoice ${invoice.number} - Wintron Technologies LLC`,
       text: `Please find invoice ${invoice.number} attached. Total: $${invoice.total.toFixed(2)} USD. Due ${invoice.dueDate.toISOString().slice(0, 10)}.`,

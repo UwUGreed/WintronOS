@@ -87,109 +87,109 @@
     },
     {
       "file": "components/automations.tsx",
-      "line": 63,
+      "line": 64,
       "control": "button",
       "label": " openForm(\"retainer\", { status: \"PAUSED\" })} > Configure billing rule "
     },
     {
       "file": "components/automations.tsx",
-      "line": 97,
+      "line": 98,
       "control": "button",
       "label": " setPreview(!preview)} > Preview due billing "
     },
     {
       "file": "components/automations.tsx",
-      "line": 104,
+      "line": 105,
       "control": "button",
       "label": " ask(\"retainers/run\", \"Run due billing?\")} > Run / retry due billing "
     },
     {
       "file": "components/automations.tsx",
-      "line": 112,
+      "line": 113,
       "control": "button",
       "label": " go(\"retainers\")}> Manage recurring contracts ↗ "
     },
     {
       "file": "components/automations.tsx",
-      "line": 156,
+      "line": 157,
       "control": "button",
       "label": " openForm(\"retainer\", { ...r })} > Configure "
     },
     {
       "file": "components/automations.tsx",
-      "line": 163,
+      "line": 164,
       "control": "button",
       "label": " void pause(r)} > Pause "
     },
     {
       "file": "components/automations.tsx",
       "line": 193,
-      "control": "button",
-      "label": " go(\"settings\")}> View integration requirements "
+      "control": "a",
+      "label": "href=\"/?module=settings&section=integrations\""
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 82,
+      "line": 83,
       "control": "button",
       "label": " openTab(\"Overview\")}> 01 · RELATIONSHIP {client.status.toLowerCase()} "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 86,
+      "line": 87,
       "control": "button",
       "label": " setProposal({ clientId: client.id })}> 02 · PROPOSAL {client.proposals?.length || 0} drafts "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 90,
+      "line": 91,
       "control": "button",
       "label": " openTab(\"Files\")}> 03 · CONTRACT Signature not tracked "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 94,
+      "line": 95,
       "control": "button",
       "label": " openTab(\"Invoices\")}> 04 · INVOICE {client.invoices?.length || 0} records "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 98,
+      "line": 99,
       "control": "button",
       "label": " openTab(\"Payments\")}> 05 · PAYMENT {client.payments?.length || 0} receipts "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 107,
+      "line": 108,
       "control": "button",
       "label": " {t.kind} · {dateLabel(t.date)} {t.label} ↗ "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 134,
+      "line": 135,
       "control": "button",
       "label": " setProposal({ clientId: client.id })} > Prepare proposal "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 140,
+      "line": 141,
       "control": "button",
       "label": " openTab(\"Files\")} > Upload / view contract "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 146,
+      "line": 147,
       "control": "button",
       "label": " openForm(\"invoice\", { clientId: client.id })} > Create invoice "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 152,
+      "line": 153,
       "control": "button",
       "label": " openForm(\"project\", { clientId: client.id })} > Start project "
     },
     {
       "file": "components/client-journey.tsx",
-      "line": 158,
+      "line": 159,
       "control": "button",
       "label": " openForm(\"note\", { clientId: client.id })} > Add relationship note "
     },
@@ -518,146 +518,248 @@
       "label": " {busy && }{\" \"} {kind === \"invoice\" ? \"Save draft\" : initial.id ? \"Save changes\" : \"Save record\"} "
     },
     {
+      "file": "components/integrations.tsx",
+      "line": 69,
+      "control": "button",
+      "label": " { setError(\"\"); void api (\"integrations/smtp\") .then(setSmtp) .catch((e) => setError(e.message)); }} > Refresh status "
+    },
+    {
+      "file": "components/integrations.tsx",
+      "line": 109,
+      "control": "button",
+      "label": " {busy ? \"Checking…\" : \"Check connection\"} "
+    },
+    {
+      "file": "components/integrations.tsx",
+      "line": 137,
+      "control": "summary",
+      "label": " Server setup instructions "
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 72,
+      "control": "a",
+      "label": "href=\"/?module=settings&section=integrations\""
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 87,
+      "control": "input",
+      "label": "placeholder=\"e.g. independent dental practices\""
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 99,
+      "control": "input",
+      "label": "placeholder=\"e.g. Charleston, SC\""
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 107,
+      "control": "button",
+      "label": " {busy ? \"Searching…\" : \"Search businesses\"} "
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 142,
+      "control": "a",
+      "label": "href={item.url}"
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 154,
+      "control": "button",
+      "label": " openProspect(item.existingProspectId!)} > Open saved prospect "
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 161,
+      "control": "button",
+      "label": " onReview(item)} > Review & save prospect "
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 178,
+      "control": "button",
+      "label": " void search(result.page - 1, criteria)} > Previous results "
+    },
+    {
+      "file": "components/lead-discovery.tsx",
+      "line": 185,
+      "control": "button",
+      "label": " void search(result.page + 1, criteria)} > Next results "
+    },
+    {
+      "file": "components/lead-integration.tsx",
+      "line": 48,
+      "control": "button",
+      "label": " setRevision((value) => value + 1)} > Refresh lead status "
+    },
+    {
+      "file": "components/lead-integration.tsx",
+      "line": 59,
+      "control": "a",
+      "label": "href=\"/?module=prospecting\""
+    },
+    {
+      "file": "components/lead-integration.tsx",
+      "line": 79,
+      "control": "summary",
+      "label": " Search provider setup "
+    },
+    {
+      "file": "components/lead-integration.tsx",
+      "line": 82,
+      "control": "a",
+      "label": "href=\"https://api-dashboard.search.brave.com/\""
+    },
+    {
       "file": "components/money-workspace.tsx",
-      "line": 64,
+      "line": 65,
       "control": "button",
       "label": " go(p, f)}> {l} ↗ {currency(v)} {h} "
     },
     {
       "file": "components/money-workspace.tsx",
-      "line": 76,
+      "line": 77,
       "control": "button",
       "label": " setShowRefunds(!showRefunds)} > Refunds:{\" \"} {currency(sum(refunds.map((r) => String(r.amount))).toString())} ↗ "
     },
     {
       "file": "components/money-workspace.tsx",
-      "line": 107,
+      "line": 117,
+      "control": "a",
+      "label": "href=\"/?module=settings&section=integrations\""
+    },
+    {
+      "file": "components/money-workspace.tsx",
+      "line": 125,
       "control": "summary",
       "label": " How to read these numbers & connection status "
     },
     {
       "file": "components/money-workspace.tsx",
-      "line": 149,
+      "line": 167,
       "control": "select",
       "label": "aria-label=\"Reconciliation filter\""
     },
     {
       "file": "components/money-workspace.tsx",
-      "line": 167,
+      "line": 185,
       "control": "button",
       "label": " { setBusy(p.id); setError(\"\"); try { await api(`payments/${p.id}/reconcile`, { reconciled: !p.reconciled, }); await reload(); } catch (e) { setError((e as Erro"
     },
     {
       "file": "components/overview.tsx",
-      "line": 56,
+      "line": 57,
       "control": "button",
       "label": " go(\"prospecting\")}> Open Prospecting "
     },
     {
       "file": "components/overview.tsx",
-      "line": 96,
+      "line": 97,
       "control": "button",
       "label": " go(m.page, m.filter)} > {m.icon} {m.label} {m.value} {m.hint} "
     },
     {
       "file": "components/overview.tsx",
-      "line": 120,
+      "line": 121,
       "control": "button",
       "label": " go(\"projects\")}> View work ↗ "
     },
     {
       "file": "components/overview.tsx",
-      "line": 128,
+      "line": 129,
       "control": "button",
       "label": " go(\"projects\", \"ALL\", t.projectId)} > {t.title} {t.project} · {t.ownerName || \"Unassigned\"} {dateLabel(t.dueDate)} "
     },
     {
       "file": "components/overview.tsx",
-      "line": 143,
+      "line": 144,
       "control": "button",
       "label": " go(\"pipeline\", \"ALL\", o.id)}> {o.name} Opportunity follow-up · {o.ownerName || \"Unassigned\"} {dateLabel(o.followUp)} "
     },
     {
       "file": "components/overview.tsx",
-      "line": 165,
+      "line": 166,
       "control": "button",
       "label": " go(\"prospecting\")}> Open workspace ↗ "
     },
     {
       "file": "components/overview.tsx",
-      "line": 171,
+      "line": 172,
       "control": "button",
       "label": " go(\"prospecting\")}> {data.prospects.length} Saved prospects "
     },
     {
       "file": "components/overview.tsx",
-      "line": 175,
+      "line": 176,
       "control": "button",
       "label": " go(\"prospecting\", \"QUALIFIED\")}> {data.prospects.filter((p) => p.status === \"QUALIFIED\").length} Qualified "
     },
     {
       "file": "components/overview.tsx",
-      "line": 181,
+      "line": 182,
       "control": "button",
       "label": " go(\"pipeline\", \"OPEN\")}> { data.opportunities.filter( (o) => ![\"WON\", \"LOST\"].includes(o.stage), ).length } Open opportunities "
     },
     {
       "file": "components/overview.tsx",
-      "line": 200,
+      "line": 202,
       "control": "button",
       "label": " go(\"invoices\", \"OUTSTANDING\")} > View outstanding ↗ "
     },
     {
       "file": "components/overview.tsx",
-      "line": 221,
+      "line": 223,
       "control": "button",
       "label": " openInvoice(i.id)}> {i.client.name} {i.number} · due {dateLabel(i.dueDate)} {currency(i.balance)} "
     },
     {
       "file": "components/overview.tsx",
-      "line": 247,
+      "line": 249,
       "control": "button",
       "label": " go(\"payments\", \"PERIOD\")} > View payments ↗ "
     },
     {
       "file": "components/overview.tsx",
-      "line": 258,
+      "line": 260,
       "control": "button",
       "label": " go(\"payments\", \"PERIOD\")}> {p.client.name} {dateLabel(p.receivedAt)} · {p.method} {currency(p.amount)} "
     },
     {
       "file": "components/overview.tsx",
-      "line": 279,
+      "line": 281,
       "control": "button",
       "label": " go(\"automations\")}> View automations ↗ "
     },
     {
       "file": "components/overview.tsx",
-      "line": 285,
-      "control": "button",
-      "label": " go(\"settings\")}> Communication inbox No inbound email integration. Replies needing attention are unavailable. "
+      "line": 287,
+      "control": "a",
+      "label": "href=\"/?module=settings&section=integrations\""
     },
     {
       "file": "components/overview.tsx",
-      "line": 295,
-      "control": "button",
-      "label": " go(\"settings\")}> Stripe & bank sync No provider adapter. Payments can be recorded manually. "
+      "line": 296,
+      "control": "a",
+      "label": "href=\"/?module=settings&section=integrations\""
     },
     {
       "file": "components/overview.tsx",
-      "line": 304,
+      "line": 306,
       "control": "button",
       "label": " go(\"automations\")}> {state.actor.role !== \"OWNER\" ? \"Run history requires owner access\" : failures.length ? `${failures.length} failed runs in recent history` "
     },
     {
       "file": "components/overview.tsx",
-      "line": 326,
+      "line": 328,
       "control": "button",
       "label": " View activity ↗ "
     },
     {
       "file": "components/overview.tsx",
-      "line": 333,
+      "line": 335,
       "control": "button",
       "label": " {a.summary} {a.entityType.toLowerCase()} · {dateLabel(a.createdAt)} "
     },
@@ -855,109 +957,109 @@
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 115,
+      "line": 118,
       "control": "button",
-      "label": " setCreate(true)}> Add prospect "
+      "label": " { setResearch(null); setCreate(true); }} > Add prospect "
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 131,
-      "control": "button",
-      "label": " go(\"settings\")} > View integrations "
-    },
-    {
-      "file": "components/prospecting.tsx",
-      "line": 142,
+      "line": 147,
       "control": "input",
       "label": "placeholder=\"Business, email, or evidence\""
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 150,
+      "line": 155,
       "control": "input",
       "label": "placeholder=\"All industries\""
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 158,
+      "line": 163,
       "control": "input",
       "label": "placeholder=\"All locations\""
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 164,
+      "line": 169,
       "control": "button",
       "label": " setSaveSearch(true)} > Save search "
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 174,
+      "line": 179,
       "control": "select",
       "label": "aria-label=\"Prospect status\""
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 184,
+      "line": 189,
       "control": "select",
       "label": "aria-label=\"Sort prospects\""
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 192,
+      "line": 197,
       "control": "select",
       "label": "aria-label=\"Saved searches\""
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 217,
+      "line": 222,
       "control": "button",
       "label": " { if ( window.confirm( \"Dismiss selected prospects? Records and evidence will be retained.\", ) ) void act(async () => { for (const p of data.prospects.filter(("
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 241,
+      "line": 246,
       "control": "button",
       "label": " setSelected([])}> Clear selection "
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 260,
+      "line": 265,
       "control": "input",
       "label": "aria-label={`Select ${p.name}`}"
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 274,
+      "line": 279,
       "control": "button",
       "label": " { setId(p.id); setEdit(false); }} > {p.name} "
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 402,
+      "line": 346,
+      "control": "a",
+      "label": "href={research.url}"
+    },
+    {
+      "file": "components/prospecting.tsx",
+      "line": 433,
       "control": "a",
       "label": "href={prospect.website}"
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 412,
+      "line": 443,
       "control": "a",
       "label": "href={prospect.sourceUrl}"
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 440,
+      "line": 471,
       "control": "button",
       "label": " setEdit(true)} > Edit / qualify prospect "
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 447,
+      "line": 478,
       "control": "button",
       "label": " go(\"pipeline\")}> Open pipeline "
     },
     {
       "file": "components/prospecting.tsx",
-      "line": 451,
+      "line": 482,
       "control": "button",
       "label": " void act( () => api(`prospects/${prospect.id}/convert`, {}), \"Opportunity created. Open Pipeline to set the next follow-up.\", ) } > Add to pipeline "
     },
@@ -1029,13 +1131,7 @@
     },
     {
       "file": "components/settings.tsx",
-      "line": 324,
-      "control": "button",
-      "label": " openForm(\"payment\")} > Record external payment "
-    },
-    {
-      "file": "components/settings.tsx",
-      "line": 385,
+      "line": 318,
       "control": "button",
       "label": " perform(\"sessions/\" + s.id, {})} > Revoke "
     },

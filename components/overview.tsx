@@ -1,4 +1,5 @@
 "use client";
+import { IntegrationStatus } from "./integration-status";
 import {
   ArrowUpRight,
   CircleCheck,
@@ -190,8 +191,9 @@ export function Overview({
             </button>
           </div>
           <p className="muted inset-copy">
-            External discovery is not configured. Add researched businesses and
-            their sources to start building your pipeline.
+            {data.integrations.leadProvider
+              ? "Search public business websites in Prospecting, then review and save sources to build your pipeline."
+              : "Lead discovery: setup required. Configure Brave Search in Settings, or add researched businesses and their sources manually."}
           </p>
         </Card>
         <Card
@@ -282,25 +284,25 @@ export function Overview({
           }
         >
           <div className="record-list">
-            <button onClick={() => go("settings")}>
+            <a href="/?module=settings&section=integrations">
               <span>
                 <strong>Communication inbox</strong>
                 <small>
-                  No inbound email integration. Replies needing attention are
-                  unavailable.
+                  Inbox connections and reply tracking are under development.
                 </small>
               </span>
-              <Badge value="NOT_CONNECTED" />
-            </button>
-            <button onClick={() => go("settings")}>
+              <IntegrationStatus state="UNDER_DEVELOPMENT" />
+            </a>
+            <a href="/?module=settings&section=integrations">
               <span>
                 <strong>Stripe & bank sync</strong>
                 <small>
-                  No provider adapter. Payments can be recorded manually.
+                  Payment processing and bank sync are under development. Manual
+                  payment records are available.
                 </small>
               </span>
-              <Badge value="NOT_CONNECTED" />
-            </button>
+              <IntegrationStatus state="UNDER_DEVELOPMENT" />
+            </a>
             <button onClick={() => go("automations")}>
               <span>
                 <strong>

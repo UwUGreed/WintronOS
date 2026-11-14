@@ -1,3 +1,6 @@
+import { leadStatus, searchLeads } from "@/lib/services/leads";
+import { smtpConfiguration } from "@/lib/smtp";
+import { smtpStatus, checkSmtp } from "@/lib/services/integrations";
 import {
   workspaceData,
   saveProspect,
@@ -118,6 +121,10 @@ async function handle(
     const organizationId = a.organizationId;
     if (method !== "GET") checkOrigin(request);
     if (method === "GET") {
+      if (resource === "integrations" && id === "leads" && !action)
+        return json(await leadStatus(a));
+      if (resource === "integrations" && id === "smtp" && !action)
+        return json(await smtpStatus(a));
       if (resource === "workspace") return json(await workspaceData(a));
       if (resource === "state") {
         const { from, to } = range(request);
@@ -144,7 +151,7 @@ async function handle(
             }),
           ]);
         return json({
-          smtpConfigured: !!process.env.SMTP_HOST && !!process.env.SMTP_FROM,
+          smtpConfigured: smtpConfiguration().configured,
           actor: a,
           organization,
           clients,
@@ -504,7 +511,7 @@ async function handle(
           audits,
           jobs,
           accounts,
-          smtpConfigured: !!process.env.SMTP_HOST && !!process.env.SMTP_FROM,
+          smtpConfigured: smtpConfiguration().configured,
           mfaRequired: process.env.REQUIRE_MFA === "true",
           version: "1.0.0",
           database: "Connected",
@@ -516,7 +523,21 @@ async function handle(
     if (method === "POST" || method === "PATCH") {
       if (resource === "documents")
         return json(await upload(a, await readMultipart(request)), 201);
+      if (
+        resource === "integrations" &&
+        id === "smtp" &&
+        action === "check" &&
+        method === "POST"
+      )
+        return json(await checkSmtp(a));
       const raw = await body(request);
+      if (
+        resource === "integrations" &&
+        id === "leads" &&
+        action === "search" &&
+        method === "POST"
+      )
+        return json(await searchLeads(a, raw));
       if (resource === "prospects")
         return json(
           action === "convert" && id

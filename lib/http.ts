@@ -1,5 +1,5 @@
 import { AppError } from "./security";
-export async function readLimited(request: Request, limit: number) {
+export async function readLimited(request: Request | Response, limit: number) {
   const declared = Number(request.headers.get("content-length") || "0");
   if (declared > limit) throw new AppError("Request too large.", 413);
   const reader = request.body?.getReader();

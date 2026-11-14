@@ -1,4 +1,5 @@
 "use client";
+import { IntegrationStatus } from "./integration-status";
 import { useState } from "react";
 import { Card, Empty, Table, api, currency, dateLabel } from "./ui";
 import { sum } from "@/lib/money";
@@ -103,6 +104,23 @@ export function MoneySummary({
           )}
         </Card>
       )}
+      <div className="setup-banner">
+        <IntegrationStatus state="UNDER_DEVELOPMENT" />
+        <div>
+          <strong>Stripe payments & bank synchronization</strong>
+          <p>
+            Online charges, processor refunds, and bank imports are under
+            development. Money currently tracks transactions you record
+            manually.
+          </p>
+        </div>
+        <a
+          className="button secondary small"
+          href="/?module=settings&section=integrations"
+        >
+          View integration status
+        </a>
+      </div>
       <details className="stage-guide">
         <summary>How to read these numbers & connection status</summary>
         <p>
@@ -112,9 +130,9 @@ export function MoneySummary({
           differ from cash received.
         </p>
         <p>
-          Stripe and bank sync: not connected. No adapter is implemented, and no
-          successful synchronization is recorded. Processing fees and bank
-          payouts are not separately modeled; they are not included as
+          Stripe and bank sync: under development. No adapter is implemented,
+          and no successful synchronization is recorded. Processing fees and
+          bank payouts are not separately modeled; they are not included as
           additional sales. Current invoice balances are not historical
           snapshots.
         </p>

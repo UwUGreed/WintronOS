@@ -1,3 +1,5 @@
+import { leadConfigured } from "./leads";
+import { smtpConfiguration } from "../smtp";
 import { z } from "zod";
 import { db } from "../db";
 import { authorize, AppError, type Actor } from "../security";
@@ -97,10 +99,10 @@ export async function workspaceData(a: Actor) {
     searches,
     jobs,
     integrations: {
-      leadProvider: false,
+      leadProvider: leadConfigured(),
       stripe: false,
       inbox: false,
-      smtp: !!process.env.SMTP_HOST && !!process.env.SMTP_FROM,
+      smtp: smtpConfiguration().configured,
     },
   };
 }

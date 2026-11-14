@@ -1,6 +1,8 @@
 "use client";
+import { LeadDiscovery } from "./lead-discovery";
+import type { LeadResult } from "@/lib/integration-types";
 import { useEffect, useState } from "react";
-import { Plus, Search, ArrowUpRight, Bookmark } from "lucide-react";
+import { Plus, ArrowUpRight, Bookmark } from "lucide-react";
 import { Badge, Card, Empty, Table, api, dateLabel, Modal } from "./ui";
 import { DetailPanel, EditFields, type Field } from "./workflow-ui";
 import type { WorkspaceData, Prospect } from "@/lib/workspace-types";
@@ -63,6 +65,7 @@ export function Prospecting({
   const [selected, setSelected] = useState<string[]>([]);
   const [id, setId] = useState<string | null>(null);
   const [create, setCreate] = useState(false);
+  const [research, setResearch] = useState<LeadResult | null>(null);
   const [edit, setEdit] = useState(false);
   const [saveSearch, setSaveSearch] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -112,29 +115,31 @@ export function Prospecting({
           <p>Research a business. Keep the evidence. Start a relationship.</p>
         </div>
         {write && (
-          <button className="button" onClick={() => setCreate(true)}>
+          <button
+            className="button"
+            onClick={() => {
+              setResearch(null);
+              setCreate(true);
+            }}
+          >
             <Plus size={16} />
             Add prospect
           </button>
         )}
       </div>
-      <div className="setup-banner">
-        <Search size={19} />
-        <div>
-          <strong>External lead search needs a provider</strong>
-          <p>
-            No search or enrichment service is implemented in this installation.
-            A provider adapter and credentials are required to discover new
-            leads. You can add researched prospects below.
-          </p>
-        </div>
-        <button
-          className="button secondary small"
-          onClick={() => go("settings")}
-        >
-          View integrations
-        </button>
-      </div>
+      <LeadDiscovery
+        prospects={data.prospects}
+        configured={data.integrations.leadProvider}
+        write={write}
+        onReview={(result) => {
+          setResearch(result);
+          setCreate(true);
+        }}
+        openProspect={(id) => {
+          setId(id);
+          setEdit(false);
+        }}
+      />
       <Card>
         <div className="prospect-criteria">
           <label>
@@ -324,11 +329,37 @@ export function Prospecting({
         </p>
       )}
       {create && (
-        <Modal title="Add prospect" onClose={() => setCreate(false)}>
+        <Modal
+          title={research ? "Review discovered business" : "Add prospect"}
+          onClose={() => setCreate(false)}
+        >
           <div className="modal-body">
+            {research && (
+              <div className="notice">
+                <strong>Review before saving</strong>
+                <p>
+                  Search title and excerpt are unverified. Confirm the business
+                  name, add its own website, and record only facts you observed.
+                  Contact details and qualification remain blank until you
+                  research them.
+                </p>
+                <a href={research.url} target="_blank" rel="noreferrer">
+                  Open source ↗
+                </a>
+                <p>{research.description}</p>
+              </div>
+            )}
             <EditFields
               fields={fields}
-              initial={{ status: "SAVED" }}
+              initial={
+                research
+                  ? {
+                      name: research.title,
+                      sourceUrl: research.url,
+                      status: "SAVED",
+                    }
+                  : { status: "SAVED" }
+              }
               endpoint="prospects"
               submit="Save prospect"
               onSaved={async () => {

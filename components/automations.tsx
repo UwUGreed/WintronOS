@@ -1,4 +1,5 @@
 "use client";
+import { IntegrationStatus } from "./integration-status";
 import { useState } from "react";
 import { Card, Table, Badge, Empty, api, dateLabel, today } from "./ui";
 import type { WorkspaceData } from "@/lib/workspace-types";
@@ -183,16 +184,18 @@ export function Automations({
       </Card>
       <Card
         title="When a prospect replies, stop follow-ups and notify me"
-        action={<Badge value="SETUP_REQUIRED" />}
+        action={<IntegrationStatus state="UNDER_DEVELOPMENT" />}
       >
         <p className="inset-copy muted">
-          This rule is unavailable: this installation has no inbox connection,
-          reply event handler, or outbound sequence engine. No follow-ups are
-          being sent by this rule.
+          Reply-triggered rules and outbound email sequences are under
+          development. This rule cannot be enabled and sends no follow-ups.
         </p>
-        <button className="button secondary" onClick={() => go("settings")}>
-          View integration requirements
-        </button>
+        <a
+          className="button secondary"
+          href="/?module=settings&section=integrations"
+        >
+          View integration status
+        </a>
       </Card>
       <Card title="Run history">
         {state.actor.role !== "OWNER" ? (
