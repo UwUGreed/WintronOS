@@ -65,7 +65,7 @@ Final results are recorded below. This is targeted regression coverage, not a cl
 
 ## External dependencies and honest limits
 
-- External business discovery now has a Brave Search adapter; it requires `BRAVE_SEARCH_API_KEY`. Source previews must be reviewed before saving a prospect, and excerpts are not automatically recorded as verified facts. Automatic contact enrichment remains **Under development**. Local saved-prospect filters work without a provider.
+- External business discovery now has a Tavily adapter; it requires `TAVILY_API_KEY`. Source previews must be reviewed before saving a prospect, and excerpts are not automatically recorded as verified facts. Automatic contact enrichment remains **Under development**. Local saved-prospect filters work without a provider.
 - Stripe/bank import and webhook adapters do not exist. No successful sync is claimed. Provider fees/payouts are not separately modeled or counted as sales. Manual payment recording and reconciliation work.
 - Inbound email, reply events, outbound sequences and reply-triggered rules are not implemented. SMTP only sends invoice documents. This checkout has neither `SMTP_HOST` nor `SMTP_FROM` configured. Invoice Send email is disabled while these are absent; setup instructions remain visible.
 - Proposals are internal drafts. Delivery/acceptance, electronic signature verification and a contract signing provider are not connected. Existing uploaded proposal/contract files remain viewable/downloadable.
@@ -137,3 +137,12 @@ Verification logs: `.data/integrations-build.log`, `.data/integrations-tests.log
 Follow-up deployed on November 14, 2026 to `https://wintron-os.tail70d8db.ts.net`, build `SESsxfCVIVgSfwew5lE3M`. A fresh local recovery snapshot at `.data/rollout-20261114T184219Z/` was restored in an isolated PostgreSQL container and verified against existing record counts, document checksums, and financial totals. No schema change was required. The first attempt safely rolled back when the restore check connected during PostgreSQL's temporary bootstrap-server transition; the retry waited for the permanent server and succeeded.
 
 Live checks passed: HTTPS login 200, health `ok`, new integration and lead-search CSS served, matching branding asset, and unauthenticated workspace/SMTP/lead-status endpoints returning 401. No browser exceptions were observed on the public login check. Authenticated workflows were tested against the isolated database, not by creating production test accounts. Raw deployment and live-check logs are `.data/integrations-deploy.log` and `.data/integrations-live-verification.json`.
+
+
+## Tavily provider switch — November 14, 2026
+
+Lead discovery now uses Tavily instead of Brave, as requested. `TAVILY_API_KEY` is kept in the private server environment; no credential is committed. Requests use Tavily's authenticated POST search endpoint with basic depth, automatic parameters disabled, and up to 20 source results. Pages of ten results are browsed locally without additional provider calls. Contact enrichment and unimplemented integrations retain their Under development labels.
+
+Verification: 59 service/unit tests passed, including Tavily request/response handling and authentication/quota errors. Three targeted browser tests passed, including failure recovery, review-before-save, and pagination without another provider request. The production build and TypeScript checks passed. One authorized live search returned 20 sources with connection verification recorded under the `system:integration-check` audit actor; the production prospect count did not change. Live search metadata is in protected `.data/tavily-live-search.json`; no raw search results or credentials are included in the report.
+
+Tavily rollout completed with live build `GzTiMg2LFZBs1GwYnmZyj` and verified local recovery snapshot `.data/rollout-20261114T185022Z/`. Existing record counts and financial totals matched. The running container reported `configured: true`, `CONNECTION_VERIFIED`, and one provider request used. HTTPS login/health, protected API access, shared assets, and browser error checks passed. The credential scan found no supplied key in tracked files or browser assets.

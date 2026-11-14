@@ -21,7 +21,7 @@ export function LeadDiscovery({
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
   const [result, setResult] = useState<LeadSearch | null>(null);
-  const [criteria, setCriteria] = useState({ query: "", location: "" });
+  const [resultPage, setResultPage] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const pending = useRef(false);
@@ -36,7 +36,7 @@ export function LeadDiscovery({
         page,
       });
       setResult(response);
-      setCriteria(input);
+      setResultPage(0);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -56,7 +56,7 @@ export function LeadDiscovery({
         !configured ? (
           <IntegrationStatus state="SETUP_REQUIRED" />
         ) : (
-          <span className="muted">Brave Search</span>
+          <span className="muted">Tavily</span>
         )
       }
     >
@@ -68,7 +68,7 @@ export function LeadDiscovery({
         </p>
         {!configured && (
           <p className="notice">
-            Lead search is implemented but needs a Brave Search API key.{" "}
+            Lead search is implemented but needs a Tavily API key.{" "}
             <a href="/?module=settings&section=integrations">
               View integration setup
             </a>
@@ -109,8 +109,9 @@ export function LeadDiscovery({
           </button>
         </form>
         <p className="muted small-text">
-          Each search or page uses your provider quota. Searches run only when
-          you request them. Nothing is saved or contacted automatically.
+          Each search uses your provider quota. Browsing result pages does not.
+          Searches run only when you request them. Nothing is saved or contacted
+          automatically.
         </p>
         {error && (
           <p className="error-message" role="alert">
@@ -122,13 +123,15 @@ export function LeadDiscovery({
           <div aria-busy={busy}>
             <p role="status">
               {result.results.length} sources for “{result.query}” · Page{" "}
-              {result.page + 1} · Retrieved{" "}
+              {resultPage + 1} of{" "}
+              {Math.max(1, Math.ceil(result.results.length / 10))} · Retrieved{" "}
               {new Date(result.searchedAt).toLocaleString()} ·{" "}
               {result.remainingToday} searches left today
             </p>
             {result.results.length ? (
               <div className="lead-results">
                 {result.results
+                  .slice(resultPage * 10, (resultPage + 1) * 10)
                   .map((entry) => ({
                     ...entry,
                     existingProspectId:
@@ -177,21 +180,23 @@ export function LeadDiscovery({
             <div className="button-row">
               <button
                 className="button secondary small"
-                disabled={busy || result.page === 0}
-                onClick={() => void search(result.page - 1, criteria)}
+                disabled={busy || resultPage === 0}
+                onClick={() => setResultPage((page) => page - 1)}
               >
                 Previous results
               </button>
               <button
                 className="button secondary small"
-                disabled={busy || !result.more}
-                onClick={() => void search(result.page + 1, criteria)}
+                disabled={
+                  busy || (resultPage + 1) * 10 >= result.results.length
+                }
+                onClick={() => setResultPage((page) => page + 1)}
               >
                 Next results
               </button>
             </div>
             <p className="muted small-text">
-              Results supplied by Brave Search. Open each source to confirm the
+              Results supplied by Tavily. Open each source to confirm the
               business and record your own observations.
             </p>
           </div>

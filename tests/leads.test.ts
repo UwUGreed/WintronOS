@@ -17,14 +17,12 @@ import type { Actor } from "../lib/security";
 const provider = vi.fn();
 let owner: Actor;
 const response = (
-  results: { title: string; url: string; description?: string }[] = [],
+  results: { title: string; url: string; content?: string }[] = [],
   more = false,
 ) =>
   new Response(
     JSON.stringify({
-      type: "search",
-      query: { more_results_available: more },
-      web: { results },
+      results,
     }),
     { headers: { "Content-Type": "application/json" } },
   );
@@ -40,7 +38,7 @@ beforeEach(async () => {
     role: "OWNER",
     name: "Test owner",
   };
-  vi.stubEnv("BRAVE_SEARCH_API_KEY", "fictional-provider-secret");
+  vi.stubEnv("TAVILY_API_KEY", "fictional-provider-secret");
   vi.stubEnv("LEAD_SEARCH_DAILY_LIMIT", "100");
   provider.mockReset().mockImplementation(() => Promise.resolve(response()));
   vi.stubGlobal("fetch", provider);
@@ -59,7 +57,7 @@ describe.sequential(
       await expect(
         searchLeads({ ...owner, role: "ACCOUNTANT" }, { query: "dentists" }),
       ).rejects.toMatchObject({ status: 403 });
-      vi.stubEnv("BRAVE_SEARCH_API_KEY", "");
+      vi.stubEnv("TAVILY_API_KEY", "");
       expect((await leadStatus(owner)).state).toBe("SETUP_REQUIRED");
       await expect(
         searchLeads(owner, { query: "dentists" }),
@@ -73,7 +71,7 @@ describe.sequential(
             {
               title: "Example Dental",
               url: "https://dentist.example.invalid/about",
-              description: "A search excerpt, not verified evidence.",
+              content: "A search excerpt, not verified evidence.",
             },
           ],
           true,
@@ -81,22 +79,34 @@ describe.sequential(
       );
       const result = await searchLeads(
         { ...owner, role: "STAFF" },
-        { query: "independent dentists", location: "Charleston", page: 1 },
+        { query: "independent dentists", location: "Charleston", page: 0 },
       );
       const [url, options] = provider.mock.calls[0];
-      expect(url.origin).toBe("https://api.search.brave.com");
-      expect(url.pathname).toBe("/res/v1/web/search");
-      expect(url.searchParams.get("q")).toBe("independent dentists Charleston");
-      expect(url.searchParams.get("offset")).toBe("1");
+      expect(url.origin).toBe("https://api.tavily.com");
+      expect(url.pathname).toBe("/search");
       expect(options).toMatchObject({
-        headers: { "X-Subscription-Token": "fictional-provider-secret" },
+        method: "POST",
+        headers: {
+          Authorization: "Bearer fictional-provider-secret",
+          "Content-Type": "application/json",
+        },
         redirect: "error",
         cache: "no-store",
       });
+      expect(JSON.parse(options.body)).toEqual({
+        query: "independent dentists Charleston",
+        topic: "general",
+        search_depth: "basic",
+        auto_parameters: false,
+        max_results: 20,
+        include_answer: false,
+        include_raw_content: false,
+        include_images: false,
+      });
       expect(result).toMatchObject({
         query: "independent dentists Charleston",
-        page: 1,
-        more: true,
+        page: 0,
+        more: false,
         remainingToday: 99,
       });
       expect(result.results[0]).toMatchObject({
@@ -173,7 +183,7 @@ describe.sequential(
       expect(result.results).toEqual([]);
       expect(result.more).toBe(false);
     });
-    it.each([401, 403, 429, 500])(
+    it.each([401, 403, 429, 432, 433, 500])(
       "reports provider HTTP %i without leaking its response or credentials",
       async (status) => {
         provider.mockResolvedValue(
@@ -183,7 +193,9 @@ describe.sequential(
         );
         await expect(
           searchLeads(owner, { query: "dentists" }),
-        ).rejects.toMatchObject({ status: status === 429 ? 429 : 502 });
+        ).rejects.toMatchObject({
+          status: [429, 432, 433].includes(status) ? 429 : 502,
+        });
         const health = await leadStatus(owner);
         expect(health.state).toBe("ERROR");
         expect(health.usedToday).toBe(1);
@@ -242,7 +254,7 @@ describe.sequential(
     });
     it("invalidates provider health when the API key changes", async () => {
       await searchLeads(owner, { query: "dentists" });
-      vi.stubEnv("BRAVE_SEARCH_API_KEY", "changed-fictional-key");
+      vi.stubEnv("TAVILY_API_KEY", "changed-fictional-key");
       expect((await leadStatus(owner)).state).toBe("VERIFICATION_REQUIRED");
     });
   },

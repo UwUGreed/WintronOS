@@ -23,7 +23,7 @@ export const developmentIntegrations = [
     description:
       "Automatic email discovery, phone verification, and contact enrichment are under development.",
     available:
-      "Search for businesses with Brave Search, review their websites, and add verified contact details manually.",
+      "Search for businesses with Tavily, review their websites, and add verified contact details manually.",
   },
   {
     id: "inbox",

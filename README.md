@@ -44,7 +44,7 @@ Open **http://localhost:3000**. The first-owner command asks for a hidden passwo
 - Double-entry accounting: immutable journals, database-enforced balancing, owner capital/distributions, reviewed adjustments and ledger-backed reports with CSV/PDF exports.
 - Taxes: effective-dated reserve assumptions, classification/residency configuration, owner book-profit allocations, earmarked amounts and entity tax payments. No invented rates or automated filing.
 - Retainers: monthly/quarterly/annual contracts, pause/cancel/renewal dates, time entries and idempotent scheduled draft generation.
-- Administration: individual accounts, Owner/Staff/Accountant roles, TOTP/recovery codes, revocable sessions, organization settings, notifications with per-user read state, owner-only SMTP connection verification, Brave Search business discovery with source review, and audit/job history. Unimplemented external integrations are explicitly labeled **Under development**; see [integration functionality and setup](docs/INTEGRATIONS.md).
+- Administration: individual accounts, Owner/Staff/Accountant roles, TOTP/recovery codes, revocable sessions, organization settings, notifications with per-user read state, owner-only SMTP connection verification, Tavily business discovery with source review, and audit/job history. Unimplemented external integrations are explicitly labeled **Under development**; see [integration functionality and setup](docs/INTEGRATIONS.md).
 - Operations: non-root Docker image, Compose, migration workflow, private volumes, health checks, hourly scheduler, encrypted offsite backup scripts, systemd schedule examples and isolated restore verification.
 
 ## Build, test and deploy

@@ -2,15 +2,15 @@
 
 Wintron OS distinguishes implemented features that need server configuration from integrations that have not been built. Missing adapters are labeled **Under development** in Settings and at the relevant points in Overview, Prospecting, Automations, Money, and client records. There are no Connect or Enable controls for unimplemented adapters.
 
-## Lead discovery: implemented, provider setup required
+## Lead discovery: Tavily
 
-**Prospecting → Discover businesses** searches public websites through the [Brave Web Search API](https://api-dashboard.search.brave.com/api-reference/web/search/get). Enter business criteria and an optional location, inspect source links and excerpts, and use **Review & save prospect** to create a record. Results can include directories and articles; they are not automatically qualified leads.
+**Prospecting → Discover businesses** searches public websites through the [Tavily Search API](https://docs.tavily.com/documentation/api-reference/endpoint/search). Enter business criteria and an optional location, inspect source links and excerpts, and use **Review & save prospect** to create a record. Results can include directories and articles; they are not automatically qualified leads.
 
 The review form copies the result title and source URL. The business website, contacts, observation date, verified facts, and qualification start blank. Search excerpts remain temporary previews and are not copied into verified evidence. After a reviewed prospect is saved, the result links to its record. Existing records are detected by source URL or matching website domain within the current organization; normal prospect duplicate checks also apply on save.
 
-Set `BRAVE_SEARCH_API_KEY` in the private server environment and restart the application. The app never returns the key to the browser. The provider status begins at **Needs verification**, becomes **Connection verified** after a successful search, and becomes **Connection failed** after a failed request. Missing credentials show **Setup required** with search disabled. Changing the key or checks older than 24 hours requires another search before claiming a verified connection.
+Set `TAVILY_API_KEY` in the private server environment and restart the application. The app never returns the key to the browser. The provider status begins at **Needs verification**, becomes **Connection verified** after a successful search, and becomes **Connection failed** after a failed request. Missing credentials show **Setup required** with search disabled. Changing the key or checks older than 24 hours requires another search before claiming a verified connection.
 
-Search requires an owner or staff account. There are ten results per page and at most ten pages, with pagination enabled only when the provider reports more results. Requests run only on explicit search or page actions; there are no background searches, automatic imports, or outreach. Existing manual prospect research remains available without credentials.
+Search requires an owner or staff account. Each search requests up to 20 sources at basic depth, with automatic parameter selection disabled. Results are displayed ten per page; page changes stay in memory and do not consume more provider requests. Provider requests run only on explicit searches; there are no background searches, automatic imports, or outreach. Existing manual prospect research remains available without credentials.
 
 `LEAD_SEARCH_DAILY_LIMIT` sets the per-organization request limit (default 100, maximum 1,000; reset at midnight UTC). The application also permits at most ten searches per minute and spaces requests by at least one second. Failed provider attempts count toward the daily allowance. Limits are enforced in database transactions across processes; the provider's own limits and billing still apply. Requests use a fixed HTTPS provider endpoint, no redirects, a 12-second timeout, a bounded response, schema validation, and sanitized errors. Secrets and raw provider errors are excluded from audit history.
 
@@ -44,7 +44,7 @@ After editing the private `.env` file, recreate the app container so it receives
 docker compose up -d --no-deps --force-recreate app
 ```
 
-Then open Settings → Integrations to inspect status. Use **Check connection** for SMTP, or run a search in Prospecting for Brave Search. Keep the environment file outside version control.
+Then open Settings → Integrations to inspect status. Use **Check connection** for SMTP, or run a search in Prospecting for Tavily. Keep the environment file outside version control.
 
 ## Under development
 
@@ -64,6 +64,6 @@ Adding credentials does not enable these unfinished integrations. No external di
 - `tests/leads.test.ts`: provider request formatting, source previews without automatic persistence, unsafe/duplicate URL filtering, organization-scoped duplicate detection, request validation, empty results, provider errors, timeouts, bounded responses, concurrency/quota limits, and credential-change invalidation. External requests use controlled test responses.
 - `tests/integrations-status.test.ts`: configuration validation, truthful states, audit persistence, sanitized failures, owner access, organization isolation, changed/expired verification, and concurrent/repeated-check prevention.
 - `tests/smtp-transport.test.ts`: real SMTP over loopback TLS with a temporary fixture certificate. Verification sends no message; an explicit fictional invoice send includes its PDF, produces SMTP audit evidence, and is distinguished from manual delivery. Invalid authentication and missing STARTTLS fail. No external provider or real recipient is contacted.
-- `tests/e2e/workspace.spec.ts`: visible development/setup labels, direct integration links, owner-only diagnostics, unauthenticated/CSRF rejection, disabled unconfigured check, failure/retry UI, refresh, and desktop/mobile layout. A separate browser flow exercises search failure/retry, pagination, source review, and saving only reviewer-entered facts against the real isolated database, with provider responses intercepted. Browser test servers explicitly clear inherited SMTP and Brave credentials.
+- `tests/e2e/workspace.spec.ts`: visible development/setup labels, direct integration links, owner-only diagnostics, unauthenticated/CSRF rejection, disabled unconfigured check, failure/retry UI, refresh, and desktop/mobile layout. A separate browser flow exercises search failure/retry, pagination, source review, and saving only reviewer-entered facts against the real isolated database, with provider responses intercepted. Browser test servers explicitly clear inherited SMTP and Tavily credentials.
 
-Live Brave searches and production email delivery remain unverified until real provider credentials are supplied. Provider search tests use fixtures; SMTP transport tests use a local TLS server. The UI does not claim otherwise.
+Provider tests use fixtures; deployment verification also checks Tavily with the configured server key. SMTP transport tests use a local TLS server; production email remains setup-dependent.

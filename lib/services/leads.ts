@@ -6,12 +6,11 @@ import { readLimited } from "../http";
 import { audit, transaction } from "./ledger";
 import type { LeadSearch, LeadStatus } from "../integration-types";
 
-export const leadConfigured = () =>
-  Boolean(process.env.BRAVE_SEARCH_API_KEY?.trim());
+export const leadConfigured = () => Boolean(process.env.TAVILY_API_KEY?.trim());
 const scope = (a: Actor) => ({
   organizationId: a.organizationId,
   entityType: "INTEGRATION",
-  entityId: "brave-search",
+  entityId: "tavily-search",
 });
 const dayStart = () => {
   const day = new Date();
@@ -30,7 +29,7 @@ function fingerprint() {
       503,
     );
   return createHmac("sha256", secret)
-    .update(process.env.BRAVE_SEARCH_API_KEY?.trim() || "")
+    .update(process.env.TAVILY_API_KEY?.trim() || "")
     .digest("hex");
 }
 export async function leadStatus(a: Actor): Promise<LeadStatus> {
@@ -61,7 +60,7 @@ export async function leadStatus(a: Actor): Promise<LeadStatus> {
       ...base,
       state: "SETUP_REQUIRED",
       detail:
-        "Lead search is implemented. Set BRAVE_SEARCH_API_KEY on the server to search for businesses.",
+        "Lead search is implemented. Set TAVILY_API_KEY on the server to search for businesses.",
     };
   const metadata = last?.after as { configHash?: string } | null;
   if (!last || metadata?.configHash !== fingerprint())
@@ -69,7 +68,7 @@ export async function leadStatus(a: Actor): Promise<LeadStatus> {
       ...base,
       state: "VERIFICATION_REQUIRED",
       detail:
-        "Brave Search is configured. Run a search in Prospecting to verify the connection.",
+        "Tavily is configured. Run a search in Prospecting to verify the connection.",
     };
   if (Date.now() - last.createdAt.getTime() > 86400000)
     return {
@@ -98,7 +97,7 @@ const inputSchema = z
         "Use 60 words or fewer.",
       ),
     location: z.string().trim().max(100).default(""),
-    page: z.number().int().min(0).max(9).default(0),
+    page: z.literal(0).default(0),
   })
   .refine(
     (input) =>
@@ -106,23 +105,15 @@ const inputSchema = z
     "Use 75 words or fewer including the location.",
   );
 const responseSchema = z.object({
-  type: z.literal("search"),
-  query: z
-    .object({ more_results_available: z.boolean().optional() })
-    .optional(),
-  web: z
-    .object({
-      results: z
-        .array(
-          z.object({
-            title: z.string().max(5000),
-            url: z.string().max(10000),
-            description: z.string().max(20000).optional(),
-          }),
-        )
-        .max(100),
-    })
-    .optional(),
+  results: z
+    .array(
+      z.object({
+        title: z.string().max(5000),
+        url: z.string().max(10000),
+        content: z.string().max(100000).optional(),
+      }),
+    )
+    .max(100),
 });
 function publicUrl(raw: string) {
   try {
@@ -156,7 +147,7 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
   const input = inputSchema.parse(raw);
   if (!leadConfigured())
     throw new AppError(
-      "Lead search setup required. Configure Brave Search in Settings → Integrations.",
+      "Lead search setup required. Configure Tavily in Settings → Integrations.",
       409,
     );
   const configHash = fingerprint();
@@ -191,8 +182,8 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
       a,
       "SEARCH_STARTED",
       "INTEGRATION",
-      "brave-search",
-      "Requested a Brave Search page. No prospects saved.",
+      "tavily-search",
+      "Requested a Tavily page. No prospects saved.",
       undefined,
       undefined,
       { configHash },
@@ -202,22 +193,24 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
   const query = [input.query, input.location].filter(Boolean).join(" ");
   let parsed: z.infer<typeof responseSchema>;
   try {
-    const url = new URL("https://api.search.brave.com/res/v1/web/search");
-    for (const [key, value] of Object.entries({
-      q: query,
-      count: "10",
-      offset: String(input.page),
-      result_filter: "web",
-      text_decorations: "false",
-      safesearch: "moderate",
-      spellcheck: "false",
-    }))
-      url.searchParams.set(key, value);
+    const url = new URL("https://api.tavily.com/search");
     const response = await fetch(url, {
+      method: "POST",
       headers: {
+        "Content-Type": "application/json",
         Accept: "application/json",
-        "X-Subscription-Token": process.env.BRAVE_SEARCH_API_KEY!.trim(),
+        Authorization: `Bearer ${process.env.TAVILY_API_KEY!.trim()}`,
       },
+      body: JSON.stringify({
+        query,
+        topic: "general",
+        search_depth: "basic",
+        auto_parameters: false,
+        max_results: 20,
+        include_answer: false,
+        include_raw_content: false,
+        include_images: false,
+      }),
       signal: AbortSignal.timeout(12000),
       redirect: "error",
       cache: "no-store",
@@ -226,15 +219,15 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
       await response.body?.cancel();
       if ([401, 403].includes(response.status))
         throw new AppError(
-          "Brave Search rejected the credentials. Ask an owner to check the API key and provider access.",
+          "Tavily rejected the credentials. Ask an owner to check the API key and provider access.",
           502,
         );
-      if (response.status === 429)
+      if ([429, 432, 433].includes(response.status))
         throw new AppError(
-          "Brave Search has reached its request or quota limit. Wait before retrying and check your provider quota.",
+          "Tavily has reached its request or quota limit. Wait before retrying and check your provider quota.",
           429,
         );
-      throw new AppError("Brave Search is unavailable. Try again later.", 502);
+      throw new AppError("Tavily is unavailable. Try again later.", 502);
     }
     parsed = responseSchema.parse(
       JSON.parse(
@@ -255,7 +248,7 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
         a,
         "SEARCH_FAILED",
         "INTEGRATION",
-        "brave-search",
+        "tavily-search",
         safe.message,
         undefined,
         undefined,
@@ -269,7 +262,7 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
     select: { id: true, website: true, sourceUrl: true },
   });
   const seen = new Set<string>();
-  const results = (parsed.web?.results || [])
+  const results = parsed.results
     .flatMap((result) => {
       const url = publicUrl(result.url);
       if (!url || seen.has(url)) return [];
@@ -278,7 +271,7 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
         {
           title: result.title.slice(0, 500),
           url,
-          description: (result.description || "").slice(0, 2000),
+          description: (result.content || "").slice(0, 2000),
           existingProspectId:
             prospects.find(
               (prospect) =>
@@ -288,7 +281,7 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
         },
       ];
     })
-    .slice(0, 10);
+    .slice(0, 20);
   const searchedAt = new Date().toISOString();
   await transaction((tx) =>
     audit(
@@ -296,8 +289,8 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
       a,
       "SEARCH_PASSED",
       "INTEGRATION",
-      "brave-search",
-      `Brave Search returned ${results.length} source results. Excerpts are unverified; no prospects were saved automatically.`,
+      "tavily-search",
+      `Tavily returned ${results.length} source results. Excerpts are unverified; no prospects were saved automatically.`,
       undefined,
       undefined,
       { configHash },
@@ -306,10 +299,7 @@ export async function searchLeads(a: Actor, raw: unknown): Promise<LeadSearch> {
   return {
     query,
     page: input.page,
-    more:
-      Boolean(parsed.query?.more_results_available) &&
-      input.page < 9 &&
-      results.length > 0,
+    more: false,
     searchedAt,
     results,
     remainingToday: Math.max(0, dailyLimit - used),

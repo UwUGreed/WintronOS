@@ -193,7 +193,7 @@ export function Overview({
           <p className="muted inset-copy">
             {data.integrations.leadProvider
               ? "Search public business websites in Prospecting, then review and save sources to build your pipeline."
-              : "Lead discovery: setup required. Configure Brave Search in Settings, or add researched businesses and their sources manually."}
+              : "Lead discovery: setup required. Configure Tavily in Settings, or add researched businesses and their sources manually."}
           </p>
         </Card>
         <Card

@@ -561,33 +561,33 @@
     },
     {
       "file": "components/lead-discovery.tsx",
-      "line": 142,
+      "line": 145,
       "control": "a",
       "label": "href={item.url}"
     },
     {
       "file": "components/lead-discovery.tsx",
-      "line": 154,
+      "line": 157,
       "control": "button",
       "label": " openProspect(item.existingProspectId!)} > Open saved prospect "
     },
     {
       "file": "components/lead-discovery.tsx",
-      "line": 161,
+      "line": 164,
       "control": "button",
       "label": " onReview(item)} > Review & save prospect "
     },
     {
       "file": "components/lead-discovery.tsx",
-      "line": 178,
+      "line": 181,
       "control": "button",
-      "label": " void search(result.page - 1, criteria)} > Previous results "
+      "label": " setResultPage((page) => page - 1)} > Previous results "
     },
     {
       "file": "components/lead-discovery.tsx",
-      "line": 185,
+      "line": 188,
       "control": "button",
-      "label": " void search(result.page + 1, criteria)} > Next results "
+      "label": " = result.results.length } onClick={() => setResultPage((page) => page + 1)} > Next results "
     },
     {
       "file": "components/lead-integration.tsx",
@@ -611,7 +611,7 @@
       "file": "components/lead-integration.tsx",
       "line": 82,
       "control": "a",
-      "label": "href=\"https://api-dashboard.search.brave.com/\""
+      "label": "href=\"https://app.tavily.com/\""
     },
     {
       "file": "components/money-workspace.tsx",

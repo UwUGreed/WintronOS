@@ -13,4 +13,4 @@ The SVG workspace mark is a simplified adaptation of the supplied WT/unicorn ref
 Integration follow-up images:
 
 - `integrations-desktop.png` and `integrations-mobile.png`: implemented providers with setup status, separate development labels, and setup instructions.
-- `lead-discovery-results.png`: source previews from an intercepted fictional provider response; no live Brave account or real prospect is represented.
+- `lead-discovery-results.png`: source previews from an intercepted fictional provider response; no live provider account or real prospect is represented.

@@ -12,7 +12,7 @@ const child = spawn("node", [".next/standalone/server.js"], {
     PORT: "43817",
     REQUIRE_MFA: "false",
     // Browser tests must never inherit a production email provider.
-    BRAVE_SEARCH_API_KEY: "",
+    TAVILY_API_KEY: "",
     SMTP_HOST: "",
     SMTP_FROM: "",
     SMTP_USER: "",

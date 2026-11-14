@@ -27,7 +27,7 @@ export function LeadIntegration() {
   }, [revision]);
   return (
     <Card
-      title="Lead discovery — Brave Search"
+      title="Lead discovery — Tavily"
       icon={<Search size={20} />}
       action={
         status ? (
@@ -79,16 +79,12 @@ export function LeadIntegration() {
           <summary>Search provider setup</summary>
           <p>
             Create a key in your{" "}
-            <a
-              href="https://api-dashboard.search.brave.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Brave Search API account
+            <a href="https://app.tavily.com/" target="_blank" rel="noreferrer">
+              Tavily API account
             </a>
-            . Set <code>BRAVE_SEARCH_API_KEY</code> in the private server
-            environment and restart the app. Then run a search in Prospecting to
-            verify it. Provider usage is billed under your own plan.
+            . Set <code>TAVILY_API_KEY</code> in the private server environment
+            and restart the app. Then run a search in Prospecting to verify it.
+            Provider usage is billed under your own plan.
           </p>
           <p>
             <code>LEAD_SEARCH_DAILY_LIMIT</code> controls the per-organization

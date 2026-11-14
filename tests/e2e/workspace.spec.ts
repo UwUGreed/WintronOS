@@ -782,7 +782,7 @@ test("lead discovery previews sources, handles failures, and saves only reviewed
     if (calls === 1) {
       await route.fulfill({
         status: 502,
-        json: { error: "Brave Search is unavailable. Try again later." },
+        json: { error: "Tavily is unavailable. Try again later." },
       });
       return;
     }
@@ -791,11 +791,11 @@ test("lead discovery previews sources, handles failures, and saves only reviewed
       json: {
         query: "independent dentists Charleston",
         page: input.page,
-        more: input.page === 0,
+        more: false,
         searchedAt: new Date().toISOString(),
         remainingToday: 100 - calls,
         results:
-          input.page === 0
+          calls === 2
             ? [
                 {
                   title: "Fictional search result title",
@@ -804,6 +804,12 @@ test("lead discovery previews sources, handles failures, and saves only reviewed
                     "Unverified provider excerpt about dental services.",
                   existingProspectId: null,
                 },
+                ...Array.from({ length: 10 }, (_, i) => ({
+                  title: `Additional fictional source ${i + 1}`,
+                  url: `https://fixture-${i}.example.invalid`,
+                  description: "Fixture preview",
+                  existingProspectId: null,
+                })),
               ]
             : [],
       },
@@ -818,7 +824,7 @@ test("lead discovery previews sources, handles failures, and saves only reviewed
     .getByRole("button", { name: "Search businesses", exact: true })
     .click();
   await expect(page.getByRole("main").getByRole("alert")).toContainText(
-    "Brave Search is unavailable",
+    "Tavily is unavailable",
   );
   await expect(page.getByLabel("Search terms", { exact: true })).toHaveValue(
     "independent dentists",
@@ -831,9 +837,11 @@ test("lead discovery previews sources, handles failures, and saves only reviewed
   ).toBeVisible();
   expect(calls).toBe(2);
   await expect(
-    page.getByText("Search excerpt · not verified business facts", {
-      exact: true,
-    }),
+    page
+      .getByText("Search excerpt · not verified business facts", {
+        exact: true,
+      })
+      .first(),
   ).toBeVisible();
   await page.screenshot({
     path: ".data/lead-discovery-results.png",
@@ -842,6 +850,7 @@ test("lead discovery previews sources, handles failures, and saves only reviewed
   });
   await page
     .getByRole("button", { name: "Review & save prospect", exact: true })
+    .first()
     .click();
   const dialog = page.getByRole("dialog", {
     name: "Review discovered business",
@@ -890,6 +899,16 @@ test("lead discovery previews sources, handles failures, and saves only reviewed
     .getByRole("button", { name: "Close details", exact: true })
     .click();
   await page.getByRole("button", { name: "Next results", exact: true }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Additional fictional source 10",
+      exact: true,
+    }),
+  ).toBeVisible();
+  expect(calls).toBe(2);
+  await page
+    .getByRole("button", { name: "Search businesses", exact: true })
+    .click();
   await expect(
     page.getByText("No matching sources", { exact: true }),
   ).toBeVisible();
